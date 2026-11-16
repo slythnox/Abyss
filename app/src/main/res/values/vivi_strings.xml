@@ -556,23 +556,23 @@
     <string name="wrapped_total_artists_subtitle">unique artists</string>
     <string name="wrapped_total_songs_title">You listened to</string>
     <string name="wrapped_total_songs_subtitle">unique songs</string>
-    <string name="wrapped_intro_title"></string>
-    <string name="wrapped_intro_subtitle">it\'s time to see what you\'ve been listening to</string>
-    <string name="wrapped_intro_button">let\'s go!</string>
-    <string name="wrapped_end_thanks">Thanks for listening with !</string>
+    <string name="wrapped_intro_title">Rift Wrapped</string>
+    <string name="wrapped_intro_subtitle">Relive every beat, every replay, and every soundtrack of your year.</string>
+    <string name="wrapped_intro_button">Unwrap Your Year</string>
+    <string name="wrapped_end_thanks">Thanks for listening with Rift!</string>
     <string name="wrapped_end_create_playlist">Create Your Wrapped Playlist</string>
     <string name="wrapped_end_creating_playlist">Creating...</string>
     <string name="wrapped_end_playlist_saved">Playlist Saved</string>
-    <string name="wrapped_logo_content_description"> Logo</string>
-    <string name="wrapped_year">2025</string>
-    <string name="wrapped_ready_title">YOUR WRAPPED IS READY!</string>
-    <string name="wrapped_ready_subtitle">Time to see what you loved this year.</string>
+    <string name="wrapped_logo_content_description">Rift Logo</string>
+    <string name="wrapped_year">2026</string>
+    <string name="wrapped_ready_title">YOUR RIFT WRAPPED IS READY!</string>
+    <string name="wrapped_ready_subtitle">Relive the soundtrack of your year with Rift.</string>
     <string name="wrapped_thank_you">Thank you for listening</string>
-    <string name="wrapped_special_thanks">Special thanks to Vividh for creating vivi-music, the app Rift is built on</string>
-    <string name="wrapped_close">Close wrapped</string>
-    <string name="wrapped_playlist_title">Your %s Wrapped</string>
-    <string name="wrapped_create_playlist">Create playlist</string>
-    <string name="wrapped_playlist_saved">Playlist saved</string>
+    <string name="wrapped_special_thanks">Crafted for pure music enjoyment with Rift</string>
+    <string name="wrapped_close">Close Wrapped</string>
+    <string name="wrapped_playlist_title">Your %s Rift Wrapped</string>
+    <string name="wrapped_create_playlist">Create Playlist</string>
+    <string name="wrapped_playlist_saved">Playlist Saved</string>
 
     <!-- Equalizer UI -->
     <plurals name="profiles_count">

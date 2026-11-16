@@ -41,11 +41,11 @@
         android:name=".app.App"
         android:allowBackup="true"
         android:appCategory="audio"
-        android:banner="@drawable/napster_logo"
+        android:banner="@drawable/icon"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/napster_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="false"
@@ -68,7 +68,7 @@
         <activity
             android:name=".app.WelcomeActivity"
             android:exported="true"
-            android:icon="@mipmap/napster_launcher"
+            android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:theme="@style/Theme.Napster" />
 
@@ -161,7 +161,7 @@
             android:name=".LauncherGlass"
             android:enabled="true"
             android:exported="true"
-            android:icon="@mipmap/napster_launcher"
+            android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:targetActivity=".app.WelcomeActivity">
             <intent-filter>
@@ -213,6 +213,11 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".feature.spotifyimport.SpotifyImportService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
         <receiver
             android:name="androidx.media3.session.MediaButtonReceiver"
             android:exported="true">
@@ -226,7 +231,7 @@
             android:resource="@xml/automotive_app_desc" />
         <meta-data
             android:name="com.google.android.gms.car.notification.SmallIcon"
-            android:resource="@drawable/ic_notification_napster" />
+            android:resource="@drawable/ic_notification_rift" />
         <!-- Napster Dot Player (Widget A - Compact 2x2) -->
         <receiver
             android:name=".widget.MusicWidgetReceiver"

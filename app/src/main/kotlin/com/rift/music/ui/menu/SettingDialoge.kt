@@ -110,7 +110,7 @@ fun SettingDialoge(
                         .padding(start = 4.dp, top = 10.dp, end = 4.dp, bottom = 10.dp)
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.napster_logo),
+                        painter = painterResource(id = R.drawable.icon),
                         contentDescription = "App Icon",
                         modifier = Modifier
                             .size(24.dp)
@@ -119,7 +119,7 @@ fun SettingDialoge(
                     
                     Text(
                         modifier = Modifier.wrapContentWidth(),
-                        text = "NAPSTER",
+                        text = "RIFT",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.sp

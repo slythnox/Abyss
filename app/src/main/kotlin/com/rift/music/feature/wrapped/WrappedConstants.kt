@@ -1,5 +1,5 @@
 ﻿/**
- * Napster (C) 2026
+ * Rift (C) 2026
  * Licensed under GPL-3.0 | See git history for contributors
  */
 
@@ -8,5 +8,5 @@ import java.util.Calendar
 
 object WrappedConstants {
     val YEAR = Calendar.getInstance().get(Calendar.YEAR)
-    val PLAYLIST_NAME = "Napster $YEAR"
+    val PLAYLIST_NAME = "Rift $YEAR"
 }

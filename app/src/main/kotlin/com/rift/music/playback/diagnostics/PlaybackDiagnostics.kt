@@ -44,7 +44,15 @@ data class PlaybackDiagnosticEvent(
     val playbackState: Int,
     val playWhenReady: Boolean,
     val isPlaying: Boolean,
-    val details: String? = null
+    val details: String? = null,
+    val playbackStage: String? = null,
+    val media3ErrorCode: Int? = null,
+    val httpStatus: Int? = null,
+    val exceptionType: String? = null,
+    val retryCount: Int? = null,
+    val fallbackAttempted: Boolean? = null,
+    val recoveryOutcome: String? = null,
+    val userMessage: String? = null,
 ) {
     val playbackStateName: String
         get() = when (playbackState) {
@@ -55,6 +63,24 @@ data class PlaybackDiagnosticEvent(
             else -> "UNKNOWN($playbackState)"
         }
 }
+
+/**
+ * Structured playback error information exposed to the UI and logging layers.
+ */
+data class PlaybackErrorInfo(
+    val mediaId: String,
+    val title: String?,
+    val provider: String?,
+    val playbackStage: String,
+    val media3ErrorCode: Int?,
+    val httpStatus: Int?,
+    val exceptionType: String?,
+    val retryCount: Int,
+    val fallbackAttempted: Boolean,
+    val recoveryOutcome: String,
+    val userMessage: String,
+    val timestampMs: Long = System.currentTimeMillis(),
+)
 
 /**
  * In-memory circular diagnostics buffer holding the most recent 100 playback events
@@ -79,7 +105,15 @@ object PlaybackDiagnostics {
         playWhenReady: Boolean = false,
         isPlaying: Boolean = false,
         details: String? = null,
-        sessionId: String = currentSessionId
+        sessionId: String = currentSessionId,
+        playbackStage: String? = null,
+        media3ErrorCode: Int? = null,
+        httpStatus: Int? = null,
+        exceptionType: String? = null,
+        retryCount: Int? = null,
+        fallbackAttempted: Boolean? = null,
+        recoveryOutcome: String? = null,
+        userMessage: String? = null,
     ) {
         val event = PlaybackDiagnosticEvent(
             id = counter.incrementAndGet(),
@@ -91,7 +125,15 @@ object PlaybackDiagnostics {
             playbackState = playbackState,
             playWhenReady = playWhenReady,
             isPlaying = isPlaying,
-            details = details
+            details = details,
+            playbackStage = playbackStage,
+            media3ErrorCode = media3ErrorCode,
+            httpStatus = httpStatus,
+            exceptionType = exceptionType,
+            retryCount = retryCount,
+            fallbackAttempted = fallbackAttempted,
+            recoveryOutcome = recoveryOutcome,
+            userMessage = userMessage,
         )
         buffer.addLast(event)
         while (buffer.size > MAX_CAPACITY) {

@@ -139,7 +139,7 @@ fun AboutScreen(
                         modifier = Modifier.padding(14.dp)
                     ) {
                         Image(
-                            painter = painterResource(R.drawable.napster_logo),
+                            painter = painterResource(R.drawable.icon),
                             contentDescription = stringResource(R.string.wrapped_logo_content_description),
                             modifier = Modifier.size(64.dp),
                             contentScale = ContentScale.Fit
@@ -173,7 +173,7 @@ fun AboutScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Image(
-                    painter = painterResource(R.drawable.napster_logo),
+                    painter = painterResource(R.drawable.icon),
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)

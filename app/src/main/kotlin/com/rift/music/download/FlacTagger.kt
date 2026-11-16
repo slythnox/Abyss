@@ -13,7 +13,8 @@ import java.io.ByteArrayOutputStream
  */
 object FlacTagger {
 
-    const val WORD_LYRICS_FIELD = "NAPSTER_LYRICS"
+    const val WORD_LYRICS_FIELD = "RIFT_LYRICS"
+    const val COMPAT_NAPSTER_LYRICS_FIELD = "NAPSTER_LYRICS"
     const val COMPAT_WORD_LYRICS_FIELD = "BITCHORD_LYRICS"
 
     fun tag(
@@ -102,6 +103,7 @@ object FlacTagger {
             if (!lyrics.isNullOrBlank()) add("LYRICS=$lyrics")
             if (!wordLyrics.isNullOrBlank()) {
                 add("$WORD_LYRICS_FIELD=$wordLyrics")
+                add("$COMPAT_NAPSTER_LYRICS_FIELD=$wordLyrics")
                 add("$COMPAT_WORD_LYRICS_FIELD=$wordLyrics")
             }
         }
@@ -169,5 +171,5 @@ object FlacTagger {
     private val REPLACED = setOf(TYPE_PADDING, TYPE_VORBIS_COMMENT, TYPE_PICTURE)
     private const val MAX_BLOCK_BYTES = (1 shl 24) - 1
     private const val PICTURE_FRONT_COVER = 3
-    private const val VENDOR = "Napster"
+    private const val VENDOR = "Rift"
 }

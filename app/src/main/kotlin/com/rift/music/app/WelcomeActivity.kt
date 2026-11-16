@@ -810,7 +810,7 @@ fun RotatingShapeContainer(modifier: Modifier = Modifier) {
         )
 
         Icon(
-            painter = painterResource(com.rift.music.R.drawable.napster_logo_foreground),
+            painter = painterResource(com.rift.music.R.drawable.icon),
             contentDescription = "Rift",
             modifier = Modifier.size(150.dp),
             tint = Color.Unspecified

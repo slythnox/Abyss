@@ -1788,7 +1788,7 @@ fun BottomSheetPlayer(
                 ) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Image(
-                            painter = painterResource(R.drawable.napster_logo),
+                            painter = painterResource(R.drawable.icon),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(if (useDarkTheme) Color.White else Color.Black),
                             modifier = Modifier.size(96.dp).alpha(0.4f),

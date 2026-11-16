@@ -163,7 +163,7 @@ fun PrivacySettings(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Napster operates with zero analytics and zero tracking. All your library data, listening history, and preferences are stored locally on your device. Below is an accurate summary of how data is stored, requested, and managed.",
+                    text = "Rift operates with zero analytics and zero tracking. All your library data, listening history, and preferences are stored locally on your device. Below is an accurate summary of how data is stored, requested, and managed.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 20.sp
@@ -294,7 +294,7 @@ fun PrivacySettings(
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.security),
                     title = { Text("Telemetry & Analytics") },
-                    description = { Text("Napster contains zero analytics SDKs, advertising trackers, or telemetry frameworks. Crash logs remain entirely on your device unless manually shared.") }
+                    description = { Text("Rift contains zero analytics SDKs, advertising trackers, or telemetry frameworks. Crash logs remain entirely on your device unless manually shared.") }
                 )
             )
         )

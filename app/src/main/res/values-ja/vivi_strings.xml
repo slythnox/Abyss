@@ -439,8 +439,8 @@
     <string name="wrapped_total_songs_subtitle">ユニークな曲数</string>
     <string name="wrapped_intro_subtitle">これまでに聴いてきた音楽を振り返りましょう</string>
     <string name="wrapped_intro_button">さあ、始めよう！</string>
-    Napsterで聴いてくれてありがとう！
-    ロゴ
+    <string name="wrapped_end_thanks">Riftで聴いてくれてありがとう！</string>
+    <string name="wrapped_logo_content_description">Rift ロゴ</string>
     <string name="wrapped_ready_title">あなたのWrappedが完成しました！</string>
     <string name="wrapped_ready_subtitle">今年あなたが夢中になった音楽を見てみましょう。</string>
     <string name="wrapped_thank_you">聴いてくれてありがとう</string>
@@ -589,8 +589,8 @@
     <string name="button_text">ボタンのテキスト</string>
     <string name="button_visible">表示する</string>
     <string name="login_successful">ログインに成功しました！</string>
-    Napsterで再生中
-    Napsterで視聴中
+    Riftで再生中
+    Riftで視聴中
     で大会に参加中
     <string name="player_background_solid">単色</string>
     <string name="resume_on_bluetooth_connect">Bluetooth接続時に再生を再開</string>

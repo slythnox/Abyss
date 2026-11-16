@@ -191,7 +191,7 @@ fun AodScreen(
     val turntableDiameter = artworkSize * 1.7f
 
     val title = mediaMetadata?.title?.takeIf { it.isNotBlank() } ?: "No track playing"
-    val artist = mediaMetadata?.artists?.joinToString { it.name }?.takeIf { it.isNotBlank() } ?: "Napster"
+    val artist = mediaMetadata?.artists?.joinToString { it.name }?.takeIf { it.isNotBlank() } ?: "Rift"
     val displayTrackInfo = if (title == "No track playing") title else "$title $artist"
 
     Box(

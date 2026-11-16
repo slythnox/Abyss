@@ -31,7 +31,7 @@ enum class AppIcon(
     @DrawableRes val previewRes: Int,
     @StringRes val labelRes: Int,
 ) {
-    GLASS("glass", ".LauncherGlass", R.drawable.napster_logo, R.string.app_icon_glass),
+    GLASS("glass", ".LauncherGlass", R.drawable.icon, R.string.app_icon_glass),
     ;
 
     companion object {

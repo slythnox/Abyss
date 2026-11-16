@@ -408,7 +408,7 @@ fun LyricsImageCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.napster_logo),
+                            painter = painterResource(id = R.drawable.icon),
                             contentDescription = null,
                             modifier = Modifier
                                 .size(16.dp)

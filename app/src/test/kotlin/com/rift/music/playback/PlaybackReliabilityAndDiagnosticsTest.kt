@@ -10,6 +10,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import com.rift.music.playback.diagnostics.PlaybackDiagnosticEvent
 import com.rift.music.playback.diagnostics.PlaybackDiagnostics
+import com.rift.music.playback.diagnostics.PlaybackErrorInfo
 import com.rift.music.playback.diagnostics.PlaybackEventType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -112,7 +113,7 @@ class PlaybackReliabilityAndDiagnosticsTest {
     }
 
     @Test
-    fun `external stream providers are exempted from CHUNK_LENGTH truncation`() {
+    fun `all stream providers stream open-ended without manual CHUNK_LENGTH slicing`() {
         data class PlaybackStub(
             val isTidalStream: Boolean = false,
             val isSpineStream: Boolean = false,
@@ -120,22 +121,76 @@ class PlaybackReliabilityAndDiagnosticsTest {
             val isSaavnStream: Boolean = false,
         )
 
-        fun shouldBypassChunking(playback: PlaybackStub): Boolean {
-            return playback.isTidalStream ||
-                playback.isSpineStream ||
-                playback.isAddonStream ||
-                playback.isSaavnStream
-        }
+        // ExoPlayer manages its own dynamic byte ranges; no stream should be forced into 10MB chunk subranges
+        fun shouldApplyManualChunkSlicing(playback: PlaybackStub): Boolean = false
 
-        // Standard YouTube stream
-        val ytStream = PlaybackStub()
-        assertFalse("YouTube streams should use chunking", shouldBypassChunking(ytStream))
+        assertFalse("YouTube streams must not use manual chunk slicing", shouldApplyManualChunkSlicing(PlaybackStub()))
+        assertFalse("Tidal stream must not use manual chunk slicing", shouldApplyManualChunkSlicing(PlaybackStub(isTidalStream = true)))
+        assertFalse("Spine stream must not use manual chunk slicing", shouldApplyManualChunkSlicing(PlaybackStub(isSpineStream = true)))
+        assertFalse("Add-on stream must not use manual chunk slicing", shouldApplyManualChunkSlicing(PlaybackStub(isAddonStream = true)))
+        assertFalse("JioSaavn stream must not use manual chunk slicing", shouldApplyManualChunkSlicing(PlaybackStub(isSaavnStream = true)))
+    }
 
-        // External streams must all bypass chunking:
-        assertTrue("Tidal stream must bypass chunking", shouldBypassChunking(PlaybackStub(isTidalStream = true)))
-        assertTrue("Spine stream must bypass chunking", shouldBypassChunking(PlaybackStub(isSpineStream = true)))
-        assertTrue("Add-on stream must bypass chunking", shouldBypassChunking(PlaybackStub(isAddonStream = true)))
-        assertTrue("JioSaavn stream must bypass chunking", shouldBypassChunking(PlaybackStub(isSaavnStream = true)))
+    @Test
+    fun `PlaybackDiagnostics records rich structured error details for production debugging`() {
+        PlaybackDiagnostics.record(
+            eventType = PlaybackEventType.ERROR,
+            mediaId = "song_xyz",
+            title = "Test Song",
+            provider = "YouTube",
+            playbackState = Player.STATE_IDLE,
+            playWhenReady = true,
+            isPlaying = false,
+            details = "errorCode=2005, httpStatus=403",
+            playbackStage = "STREAM_EXPIRED",
+            media3ErrorCode = 2005,
+            httpStatus = 403,
+            exceptionType = "HttpDataSource.InvalidResponseCodeException",
+            retryCount = 2,
+            fallbackAttempted = true,
+            recoveryOutcome = "RETRYING",
+            userMessage = "Stream URL expired. Refreshing stream...",
+        )
+
+        val events = PlaybackDiagnostics.getRecentEvents()
+        assertEquals(1, events.size)
+        val event = events.first()
+        assertEquals("STREAM_EXPIRED", event.playbackStage)
+        assertEquals(Integer.valueOf(2005), event.media3ErrorCode)
+        assertEquals(Integer.valueOf(403), event.httpStatus)
+        assertEquals("HttpDataSource.InvalidResponseCodeException", event.exceptionType)
+        assertEquals(Integer.valueOf(2), event.retryCount)
+        assertEquals(true, event.fallbackAttempted)
+        assertEquals("RETRYING", event.recoveryOutcome)
+        assertEquals("Stream URL expired. Refreshing stream...", event.userMessage)
+    }
+
+    @Test
+    fun `PlaybackErrorInfo properly encapsulates user message and structured diagnostic payload`() {
+        val errorInfo = PlaybackErrorInfo(
+            mediaId = "track_123",
+            title = "Bohemian Rhapsody",
+            provider = "YouTube",
+            playbackStage = "HTTP_TRANSFER",
+            media3ErrorCode = 2004,
+            httpStatus = 404,
+            exceptionType = "HttpDataSource.InvalidResponseCodeException",
+            retryCount = 3,
+            fallbackAttempted = true,
+            recoveryOutcome = "SKIPPED_NEXT",
+            userMessage = "Cannot play \"Bohemian Rhapsody\". Skipping to next track.",
+        )
+
+        assertEquals("track_123", errorInfo.mediaId)
+        assertEquals("Bohemian Rhapsody", errorInfo.title)
+        assertEquals("YouTube", errorInfo.provider)
+        assertEquals("HTTP_TRANSFER", errorInfo.playbackStage)
+        assertEquals(Integer.valueOf(2004), errorInfo.media3ErrorCode)
+        assertEquals(Integer.valueOf(404), errorInfo.httpStatus)
+        assertEquals(3, errorInfo.retryCount)
+        assertTrue(errorInfo.fallbackAttempted)
+        assertEquals("SKIPPED_NEXT", errorInfo.recoveryOutcome)
+        assertTrue(errorInfo.userMessage.contains("Skipping to next track"))
     }
 
     @Test

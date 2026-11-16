@@ -77,7 +77,7 @@ class FileLoggingTree(private val logFile: File) : Timber.Tree() {
  * + full Timber history + in-app playback event log, shipped via FileProvider.
  */
 object DebugLogs {
-    const val FILE_NAME = "napster_log.txt"
+    const val FILE_NAME = "rift_log.txt"
     private const val MAX_SHARE_CHARS = 400_000
 
     fun file(context: Context): File {
@@ -125,7 +125,7 @@ object DebugLogs {
         val body = buildBody(context, playbackLogs)
         try {
             val ts = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-            val shareFile = File(context.cacheDir, "napster_log_$ts.txt")
+            val shareFile = File(context.cacheDir, "rift_log_$ts.txt")
             shareFile.writeText(body)
             val uri = FileProvider.getUriForFile(context, "${context.packageName}.FileProvider", shareFile)
             val intent = Intent(Intent.ACTION_SEND).apply {

@@ -69,7 +69,20 @@ When a track is prepared for playback:
    - **Scoped Metadata Fetching:** YouTube metadata queries (`YouTube.next(videoId)`) are performed via a scoped lazy provider (`getYtMetadata()`). The first external provider triggers the lookup; subsequent fallback providers reuse the cached title, artist, and duration instantly in 0 ms.
 3. **Primary YouTube Resolution (`YTPlayerUtils.kt`):**
    - Direct streaming URLs are resolved from YouTube Music via InnerTube endpoints, selecting optimal audio streams (WebM/Opus or M4A/AAC).
+   - **Progressive Format Fallback:** If `adaptiveFormats` has no pure audio streams, the resolver falls back to progressive `formats` or any format containing audio.
+   - **Client-Matched GET Probe Validation:** Stream URLs are validated via a lightweight HTTP `GET` probe with `Range: bytes=0-1` using the client's matching User-Agent. Both 200 OK and 206 Partial Content are treated as verified successes. Probe timeouts are handled non-fatally to avoid falsely discarding working streams.
+   - **Open-Ended Media3 Streaming (No Manual Chunk Slicing):** In `MusicService.createDataSourceFactory`, all media streams (YouTube and external static providers) stream using Media3's native open-ended byte ranges without manual 10 MB chunk slicing (`CHUNK_LENGTH`). This eliminates HTTP 416 (Range Not Satisfiable) failures and playback halts during seeking or high-buffer buffering.
    - **Terminal Error Abort:** The resolver inspects response payloads using `BotDetectionMitigator.isUniversalTerminalError()`. Unrecoverable terminal states (e.g. deleted videos, copyright strikes, private clips) terminate fallback iteration immediately, avoiding 15–30-second multi-client retry delays. Recoverable network or throttling errors retain standard multi-client rotation.
+
+---
+
+## 4. Playback Diagnostics and Structured Error Reporting
+
+Rift incorporates structured error diagnostics in `PlaybackDiagnostics` and `PlaybackErrorInfo`:
+- **Structured Error Payload:** Captures track ID (`mediaId`), provider, playback stage (`AUDIO_DECODER`, `STREAM_EXPIRED`, `HTTP_RANGE`, `PARSING`, `NETWORK`, `HTTP_TRANSFER`, `FINAL_RECOVERY`), Media3 error code, HTTP status, exception type, retry count, fallback attempt status, recovery outcome (`RETRYING`, `SKIPPED_NEXT`, `FAILED_STOPPED`), and a user-friendly message.
+- **UI Error Visibility:** Errors are exposed via `PlayerConnection.playbackError` StateFlow and rendered to the user via Snackbar prompts, preventing silent failures.
+- **Stable UI on Error:** Fatal playback stops retain `currentMediaMetadata` rather than wiping it to `null`, ensuring the player bar remains visible in a stopped state with diagnostic feedback instead of disappearing.
+- **No Sensitive Leakage:** Auth tokens, private headers, and signed stream URL signatures are strictly excluded from diagnostics logs.
 
 ---
 

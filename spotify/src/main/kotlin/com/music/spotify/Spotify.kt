@@ -15,6 +15,8 @@ import io.ktor.http.isSuccess
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.*
 
 object Spotify {
@@ -97,6 +99,15 @@ object Spotify {
 
     private const val PATHFINDER_QUERY_HASH = "a65e12194ed5fc443a1cdebed5fabe33ca5b07b987185d63c72483867ad13cb4"
 
+    data class SpotifyPagedBatch(
+        val playlistName: String,
+        val coverUrl: String,
+        val tracks: List<SpotifyTrack>,
+        val offset: Int,
+        val totalCount: Int,
+        val isLast: Boolean,
+    )
+
     /**
      * Preserved for caller compatibility in recommendation seeding.
      * Account search is not enabled; recommendations rely on curated embed playlists.
@@ -110,16 +121,17 @@ object Spotify {
         fetchPlaylistMetadata(playlistId).map { it.tracks }
 
     /**
-     * Fetches complete public Spotify playlist metadata with full pagination.
-     * Supports playlists containing 1,000+ tracks.
-     * Extracts an unauthenticated guest token from the public embed page and queries
-     * the partner GraphQL endpoint with automatic pagination, rate-limit backoff,
-     * and duplicate detection.
+     * Streams paged batches of public Spotify playlist tracks using the guest embed token
+     * and Pathfinder GraphQL pagination. Processes playlists of 4,000+ tracks incrementally
+     * without loading all tracks into a single massive collection in memory.
+     * Supports resuming from [startOffset].
      */
-    suspend fun fetchPlaylistMetadata(
+    fun fetchPlaylistPagedTracks(
         playlistId: String,
+        startOffset: Int = 0,
+        pageSize: Int = 100,
         maxTracks: Int = 10_000,
-    ): Result<SpotifyPlaylistMetadata> = runCatching {
+    ): Flow<SpotifyPagedBatch> = flow {
         // Step 1: Fetch embed page for playlist metadata and initial batch
         val embedResponse = httpClient.get("https://open.spotify.com/embed/playlist/$playlistId")
         val html = embedResponse.bodyAsText()
@@ -144,62 +156,114 @@ object Spotify {
         val tokenRegex = Regex("""\"accessToken\":\"([^\"]+)\"""")
         var token = tokenRegex.find(html)?.groupValues?.get(1)
 
-        val allTracks = mutableListOf<SpotifyTrack>()
-
-        // Step 2: If we have an anonymous token and there may be more tracks, paginate via Pathfinder
-        if (!token.isNullOrBlank()) {
-            try {
-                var offset = 0
-                var totalCount = Int.MAX_VALUE
-                val pageSize = 100
-
-                while (offset < totalCount && allTracks.size < maxTracks) {
-                    currentCoroutineContext().ensureActive()
-                    val validToken = token ?: break
-
-                    val pageResult = fetchPathfinderPageWithRetries(
-                        playlistId = playlistId,
-                        token = validToken,
-                        offset = offset,
-                        limit = pageSize,
-                        defaultCoverUrl = coverUrl,
-                        onTokenExpired = {
-                            val refreshed = fetchGuestToken(playlistId)
-                            if (!refreshed.isNullOrBlank()) {
-                                token = refreshed
-                                refreshed
-                            } else {
-                                null
-                            }
-                        },
+        if (token.isNullOrBlank()) {
+            // Pathfinder token unavailable: emit embed tracks as single batch
+            val remainingEmbedTracks = if (startOffset > 0) embedTracks.drop(startOffset) else embedTracks
+            if (remainingEmbedTracks.isNotEmpty()) {
+                emit(
+                    SpotifyPagedBatch(
+                        playlistName = playlistName,
+                        coverUrl = coverUrl,
+                        tracks = remainingEmbedTracks,
+                        offset = startOffset,
+                        totalCount = embedTracks.size,
+                        isLast = true,
                     )
+                )
+            }
+            return@flow
+        }
 
-                    if (pageResult != null) {
-                        if (pageResult.totalCount > 0) {
-                            totalCount = pageResult.totalCount
-                        }
-                        if (pageResult.tracks.isNotEmpty()) {
-                            // Preserve intentional duplicate playlist entries and sequence order
-                            allTracks.addAll(pageResult.tracks)
-                        } else {
-                            // Empty page returned: reached end of playlist
-                            break
-                        }
+        var offset = startOffset
+        var totalCount = Int.MAX_VALUE
+        var emittedAny = false
+
+        while (offset < totalCount && offset < maxTracks) {
+            currentCoroutineContext().ensureActive()
+            val validToken = token ?: break
+
+            val pageResult = fetchPathfinderPageWithRetries(
+                playlistId = playlistId,
+                token = validToken,
+                offset = offset,
+                limit = pageSize,
+                defaultCoverUrl = coverUrl,
+                onTokenExpired = {
+                    val refreshed = fetchGuestToken(playlistId)
+                    if (!refreshed.isNullOrBlank()) {
+                        token = refreshed
+                        refreshed
                     } else {
-                        // Page fetch failed after retries: preserve what we have and stop paginating
-                        break
+                        null
                     }
+                },
+            )
 
-                    offset += pageSize
+            if (pageResult != null) {
+                if (pageResult.totalCount > 0) {
+                    totalCount = pageResult.totalCount
                 }
-            } catch (e: Exception) {
-                // If pathfinder pagination failed partially, preserve already loaded tracks
+                if (pageResult.tracks.isNotEmpty()) {
+                    emittedAny = true
+                    val isLast = (offset + pageResult.tracks.size >= totalCount) || (offset + pageResult.tracks.size >= maxTracks)
+                    emit(
+                        SpotifyPagedBatch(
+                            playlistName = playlistName,
+                            coverUrl = coverUrl,
+                            tracks = pageResult.tracks,
+                            offset = offset,
+                            totalCount = totalCount,
+                            isLast = isLast,
+                        )
+                    )
+                    offset += pageResult.tracks.size
+                    if (isLast) break
+                } else {
+                    // Empty page returned: reached end of playlist
+                    break
+                }
+            } else {
+                // Page fetch failed after retries
+                break
             }
         }
 
-        // Fallback to embed tracks if Pathfinder returned nothing (e.g., token unavailable or first request failed)
-        if (allTracks.isEmpty()) {
-            allTracks.addAll(embedTracks)
+        // Fallback to embed tracks if Pathfinder returned nothing
+        if (!emittedAny && embedTracks.isNotEmpty()) {
+            emit(
+                SpotifyPagedBatch(
+                    playlistName = playlistName,
+                    coverUrl = coverUrl,
+                    tracks = embedTracks,
+                    offset = 0,
+                    totalCount = embedTracks.size,
+                    isLast = true,
+                )
+            )
+        }
+    }
+
+    /**
+     * Fetches complete public Spotify playlist metadata with full pagination.
+     * Supports playlists containing 1,000+ tracks.
+     * Extracts an unauthenticated guest token from the public embed page and queries
+     * the partner GraphQL endpoint with automatic pagination, rate-limit backoff,
+     * and duplicate detection.
+     */
+    suspend fun fetchPlaylistMetadata(
+        playlistId: String,
+        maxTracks: Int = 10_000,
+    ): Result<SpotifyPlaylistMetadata> = runCatching {
+        val allTracks = mutableListOf<SpotifyTrack>()
+        var playlistName = "Spotify playlist"
+        var coverUrl = ""
+        var totalCount = 0
+
+        fetchPlaylistPagedTracks(playlistId, pageSize = 100, maxTracks = maxTracks).collect { batch ->
+            playlistName = batch.playlistName
+            coverUrl = batch.coverUrl
+            totalCount = batch.totalCount
+            allTracks.addAll(batch.tracks)
         }
 
         if (allTracks.isEmpty()) {
@@ -211,7 +275,7 @@ object Spotify {
             name = playlistName,
             tracks = allTracks,
             imageUrl = coverUrl.ifBlank { allTracks.firstNotNullOfOrNull { it.album?.images?.firstOrNull()?.url } },
-            totalTracks = allTracks.size,
+            totalTracks = if (totalCount > 0) totalCount else allTracks.size,
         )
     }
 

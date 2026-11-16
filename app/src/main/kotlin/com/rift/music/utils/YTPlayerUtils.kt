@@ -550,7 +550,7 @@ object YTPlayerUtils {
                     break
                 }
 
-                if (validateStatus(streamUrl!!)) {
+                if (validateStatus(streamUrl!!, currentClient)) {
                     // working stream found
                     Timber.tag(logTag).d("Stream validated successfully with client: ${currentClient.clientName}")
                     PlaybackLogManager.log(PlaybackLogLevel.INFO, "Stream validated", currentClient.clientName)
@@ -569,7 +569,7 @@ object YTPlayerUtils {
                             val nTransformed = CipherDeobfuscator.transformNParamInUrl(streamUrl!!)
                             if (nTransformed != streamUrl) {
                                 Timber.tag(logTag).d("CipherDeobfuscator n-transform applied, re-validating...")
-                                if (validateStatus(nTransformed)) {
+                                if (validateStatus(nTransformed, currentClient)) {
                                     Timber.tag(logTag).d("N-transformed URL VALIDATED OK!")
                                     streamUrl = nTransformed
                                     nTransformWorked = true
@@ -682,6 +682,14 @@ object YTPlayerUtils {
         val audioFormats = playerResponse.streamingData?.adaptiveFormats
             ?.filter { it.isAudio }
             .orEmpty()
+            .ifEmpty {
+                playerResponse.streamingData?.formats
+                    ?.filter { it.isAudio || it.mimeType.startsWith("audio/") }
+                    .orEmpty()
+                    .ifEmpty {
+                        playerResponse.streamingData?.formats.orEmpty()
+                    }
+            }
         // Some videos (auto-dubs, certain regional content) only serve non-original
         // audio tracks — requiring isOriginal made those permanently unplayable
         // (format=null -> thrown as a generic Exception -> ExoPlayer buckets it as
@@ -709,27 +717,31 @@ object YTPlayerUtils {
     }
     /**
      * Checks if the stream url returns a successful status.
+     * Uses a GET probe with Range: bytes=0-1 matching the client's user-agent.
      * If this returns true the url is likely to work.
      * If this returns false the url might cause an error during playback.
      */
-    private fun validateStatus(url: String): Boolean {
+    private fun validateStatus(url: String, client: YouTubeClient? = null): Boolean {
         Timber.tag(logTag).d("Validating stream URL status")
         try {
+            val userAgent = client?.userAgent ?: YouTubeClient.USER_AGENT_WEB
             val requestBuilder = okhttp3.Request.Builder()
-                .head()
+                .get()
                 .url(url)
-                .header("User-Agent", YouTubeClient.USER_AGENT_WEB)
+                .header("User-Agent", userAgent)
+                .header("Range", "bytes=0-1")
 
             // Do NOT add Cookie header — googlevideo.com CDN rejects account cookies with 403.
             // Stream URLs are already authenticated via signed URL parameters.
 
             val response = httpClient.newCall(requestBuilder.build()).execute()
-            val isSuccessful = response.isSuccessful
-            Timber.tag(logTag).d("Stream URL validation result: ${if (isSuccessful) "Success" else "Failed"} (${response.code})")
-            return isSuccessful
+            response.use {
+                val isSuccessful = it.isSuccessful || it.code == 206
+                Timber.tag(logTag).d("Stream URL validation result: ${if (isSuccessful) "Success" else "Failed"} (${it.code})")
+                return isSuccessful
+            }
         } catch (e: Exception) {
-            Timber.tag(logTag).e(e, "Stream URL validation failed with exception")
-            reportException(e)
+            Timber.tag(logTag).w(e, "Stream URL validation probe failed with exception")
         }
         return false
     }

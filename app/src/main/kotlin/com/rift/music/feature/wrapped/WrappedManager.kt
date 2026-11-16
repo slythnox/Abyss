@@ -234,8 +234,8 @@ class WrappedManager(
                 30 -> "Monthly Wrapped"
                 60 -> "Past 2 Months"
                 90 -> "Past 3 Months"
-                365 -> "Napster ${WrappedConstants.YEAR}"
-                else -> "Napster ${WrappedConstants.YEAR}"
+                365 -> "Rift ${WrappedConstants.YEAR}"
+                else -> "Rift ${WrappedConstants.YEAR}"
             }
 
             _state.update {

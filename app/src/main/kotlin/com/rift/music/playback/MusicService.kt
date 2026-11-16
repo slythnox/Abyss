@@ -184,6 +184,7 @@ import com.rift.music.playback.audio.LosslessStallWatchdogAudioProcessor
 import com.rift.music.playback.audio.SilenceDetectorAudioProcessor
 import com.rift.music.playback.audio.TrackAnalyzerAudioProcessor
 import com.rift.music.playback.diagnostics.PlaybackDiagnostics
+import com.rift.music.playback.diagnostics.PlaybackErrorInfo
 import com.rift.music.playback.diagnostics.PlaybackEventType
 import com.rift.music.playback.dj.DjEngine
 import com.rift.music.playback.events.OptionalPlaybackEventDispatcher
@@ -374,6 +375,7 @@ class MusicService :
     private lateinit var connectivityManager: ConnectivityManager
     lateinit var connectivityObserver: NetworkConnectivityObserver
     val waitingForNetworkConnection = MutableStateFlow(false)
+    val playbackErrorInfo = MutableStateFlow<PlaybackErrorInfo?>(null)
     private val isNetworkConnected = MutableStateFlow(false)
 
     private lateinit var audioQuality: com.rift.music.constants.AudioQuality
@@ -615,7 +617,7 @@ class MusicService :
                 R.string.music_player
             )
                 .apply {
-                    setSmallIcon(R.drawable.ic_notification_napster)
+                    setSmallIcon(R.drawable.ic_notification_rift)
                 },
         )
         player = createExoPlayer()
@@ -1470,7 +1472,8 @@ class MusicService :
         // a swipe-away. Playback is dead here and has to be restarted anyway;
         // Media3 re-foregrounds automatically the next time audio starts.
         stopSelf()
-        currentMediaMetadata.value = null
+        // Retain currentMediaMetadata so the player UI does not vanish abruptly into an empty state.
+        // The error state is presented to the user via playbackErrorInfo and UI notification.
         updateWidgetUI(false)
     }
 
@@ -2485,6 +2488,7 @@ class MusicService :
         // checked it (first play with no preload buffer). By STATE_READY the
         // resolver has definitely run for the current item.
         if (playbackState == Player.STATE_READY) {
+            playbackErrorInfo.value = null
             player.currentMediaItem?.mediaId?.let { mediaId ->
                 playerStallWatchdogs[player]?.armed = losslessStreamMediaIds.contains(mediaId)
             }
@@ -2878,14 +2882,64 @@ class MusicService :
         asiFeedbackCollector.onPlayerError(error, mediaId)
         logPlayerErrorDetail(error, mediaId)
         val httpStatus = getHttpResponseCode(error)
+        val title = player.currentMediaItem?.mediaMetadata?.title?.toString()
+        val retryCountForMedia: Int = (if (mediaId != null) currentMediaIdRetryCount[mediaId] else null) ?: retryCount
+        val fallbackAttempted = mediaId != null && (recentlyFailedSongs.contains(mediaId) || retryCountForMedia > 0)
+        val exceptionType = error.cause?.javaClass?.simpleName ?: error.javaClass.simpleName
+        val providerName = when {
+            mediaId != null && losslessStreamMediaIds.contains(mediaId) -> "Lossless"
+            else -> "YouTube"
+        }
+
+        val (playbackStage, userMessage) = when {
+            isDecoderReclaimError(error) || isAudioRendererError(error) ->
+                "AUDIO_DECODER" to "Audio decoder error. Resetting codec..."
+            isRangeNotSatisfiableError(error) ->
+                "HTTP_RANGE" to "Track seek range unavailable. Reloading..."
+            isPageReloadError(error) || isExpiredUrlError(error) ->
+                "STREAM_EXPIRED" to "Stream URL expired. Refreshing stream..."
+            isParsingError(error) ->
+                "PARSING" to "Unsupported audio stream format. Recovering..."
+            !isNetworkConnected.value || isNetworkRelatedError(error) ->
+                "NETWORK" to "Network connection lost. Waiting for connection..."
+            error.errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED ||
+                error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS ->
+                "HTTP_TRANSFER" to "Playback stream error (HTTP $httpStatus). Retrying..."
+            else ->
+                "PLAYBACK" to "Unable to play track."
+        }
+
         PlaybackDiagnostics.record(
             eventType = PlaybackEventType.ERROR,
             mediaId = mediaId,
-            title = player.currentMediaItem?.mediaMetadata?.title?.toString(),
+            title = title,
+            provider = providerName,
             playbackState = player.playbackState,
             playWhenReady = player.playWhenReady,
             isPlaying = player.isPlaying,
-            details = "errorCode=${error.errorCode}, httpStatus=$httpStatus, msg=${error.message}, cause=${error.cause?.javaClass?.simpleName}: ${error.cause?.message}"
+            details = "errorCode=${error.errorCode}, httpStatus=$httpStatus, msg=${error.message}, cause=${error.cause?.javaClass?.simpleName}: ${error.cause?.message}",
+            playbackStage = playbackStage,
+            media3ErrorCode = error.errorCode,
+            httpStatus = httpStatus,
+            exceptionType = exceptionType,
+            retryCount = retryCountForMedia,
+            fallbackAttempted = fallbackAttempted,
+            recoveryOutcome = "RETRYING",
+            userMessage = userMessage,
+        )
+
+        playbackErrorInfo.value = PlaybackErrorInfo(
+            mediaId = mediaId ?: "unknown",
+            title = title,
+            provider = providerName,
+            playbackStage = playbackStage,
+            media3ErrorCode = error.errorCode,
+            httpStatus = httpStatus,
+            exceptionType = exceptionType,
+            retryCount = retryCountForMedia,
+            fallbackAttempted = fallbackAttempted,
+            recoveryOutcome = "RETRYING",
+            userMessage = userMessage,
         )
         Timber.tag(TAG).w(error, "Player error occurred for $mediaId: errorCode=${error.errorCode}, message=${error.message}")
         reportException(error)
@@ -3325,7 +3379,47 @@ class MusicService :
      * Handles final failure when all recovery attempts have been exhausted.
      */
     private fun handleFinalFailure() {
-        if (dataStore.get(AutoSkipNextOnErrorKey, false)) {
+        val mediaId = player.currentMediaItem?.mediaId
+        val title = player.currentMediaItem?.mediaMetadata?.title?.toString()
+        val willSkip = dataStore.get(AutoSkipNextOnErrorKey, false)
+        val outcome = if (willSkip) "SKIPPED_NEXT" else "FAILED_STOPPED"
+        val message = if (willSkip) "Cannot play \"$title\". Skipping to next track." else "Cannot play \"$title\". Playback stopped."
+        val finalRetryCount: Int = (if (mediaId != null) currentMediaIdRetryCount[mediaId] else null) ?: retryCount
+
+        PlaybackDiagnostics.record(
+            eventType = PlaybackEventType.ERROR,
+            mediaId = mediaId,
+            title = title,
+            provider = if (mediaId != null && losslessStreamMediaIds.contains(mediaId)) "Lossless" else "YouTube",
+            playbackState = player.playbackState,
+            playWhenReady = player.playWhenReady,
+            isPlaying = player.isPlaying,
+            details = "All recovery attempts exhausted ($outcome)",
+            playbackStage = "FINAL_RECOVERY",
+            media3ErrorCode = player.playerError?.errorCode,
+            httpStatus = null,
+            exceptionType = player.playerError?.cause?.javaClass?.simpleName ?: player.playerError?.javaClass?.simpleName,
+            retryCount = finalRetryCount,
+            fallbackAttempted = true,
+            recoveryOutcome = outcome,
+            userMessage = message,
+        )
+
+        playbackErrorInfo.value = PlaybackErrorInfo(
+            mediaId = mediaId ?: "unknown",
+            title = title,
+            provider = if (mediaId != null && losslessStreamMediaIds.contains(mediaId)) "Lossless" else "YouTube",
+            playbackStage = "FINAL_RECOVERY",
+            media3ErrorCode = player.playerError?.errorCode,
+            httpStatus = null,
+            exceptionType = player.playerError?.cause?.javaClass?.simpleName ?: player.playerError?.javaClass?.simpleName,
+            retryCount = finalRetryCount,
+            fallbackAttempted = true,
+            recoveryOutcome = outcome,
+            userMessage = message,
+        )
+
+        if (willSkip) {
             Timber.tag(TAG).d("All recovery attempts exhausted, auto-skipping to next track")
             skipOnError()
         } else {
@@ -3738,10 +3832,10 @@ class MusicService :
                     details = "Resolved stream url (external=$isExternalStaticStream)"
                 )
 
-                if (isExternalStaticStream) {
-                    return@Factory spec.withUri(streamUrl.toUri())
-                }
-                return@Factory spec.withUri(streamUrl.toUri()).subrange(dataSpec.uriPositionOffset, CHUNK_LENGTH)
+                // Direct static file URLs (Tidal, Spine, JioSaavn, HTTP Add-on) and standard YouTube streams
+                // must stream using Media3's open-ended byte ranges without manual CHUNK_LENGTH slicing,
+                // which causes HTTP 416 errors and cutoffs during seeks or high-buffer playback.
+                return@Factory spec.withUri(streamUrl.toUri())
             }
         }
     }

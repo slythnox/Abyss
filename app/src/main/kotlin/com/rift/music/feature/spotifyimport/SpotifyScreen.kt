@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import coil3.compose.AsyncImage
 import com.rift.music.LocalPlayerAwareWindowInsets
 import com.rift.music.R
 import com.rift.music.constants.RecommendationEngine
@@ -49,6 +51,7 @@ fun SpotifyScreen(
         defaultValue = RecommendationEngine.YOUTUBE
     )
     val importProgress by viewModel.importProgress.collectAsStateWithLifecycle()
+    val importState by viewModel.importState.collectAsStateWithLifecycle()
     val showDialog by viewModel.showDialog.collectAsStateWithLifecycle()
 
     Column(
@@ -87,7 +90,136 @@ fun SpotifyScreen(
             )
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Live Active Import Card visible directly on the page
+        if (importState.isActive || importState.status == SpotifyImportStatus.PAUSED_RETRYING) {
+            val isInterrupted = importState.status == SpotifyImportStatus.PAUSED_RETRYING
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = if (isInterrupted) {
+                    MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)
+                } else {
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                },
+                tonalElevation = 4.dp,
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        if (!importState.artworkUrl.isNullOrBlank()) {
+                            AsyncImage(
+                                model = importState.artworkUrl,
+                                contentDescription = "Playlist Cover",
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop,
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(R.drawable.spotify),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .padding(4.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = importState.playlistName.ifBlank { "Spotify Playlist" },
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                            )
+                            Text(
+                                text = if (isInterrupted) "Import Paused / Interrupted" else importState.currentStage,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                            )
+                        }
+
+                        Text(
+                            text = "${importState.percent}%",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+
+                    if (importState.isIndeterminate) {
+                        LinearProgressIndicator(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(4.dp)),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        )
+                    } else {
+                        LinearProgressIndicator(
+                            progress = { importState.progress },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(4.dp)),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${importState.importedCount} imported • ${importState.failedCount} failed • ${importState.processedTracks}/${importState.totalTracks}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (isInterrupted) {
+                                Button(
+                                    onClick = { viewModel.resumeInterruptedImport() },
+                                    shape = CircleShape,
+                                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                                ) {
+                                    Text("Resume", style = MaterialTheme.typography.labelMedium)
+                                }
+                            } else {
+                                TextButton(
+                                    onClick = { SpotifyImportViewModel.showImportDialog() },
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Text("Details", style = MaterialTheme.typography.labelMedium)
+                                }
+                            }
+                            TextButton(
+                                onClick = { viewModel.cancelImport() },
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Text("Cancel", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelMedium)
+                            }
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
         Material3SettingsGroup(
             title = "Import via Playlist Link",
@@ -98,13 +230,14 @@ fun SpotifyScreen(
                             value = playlistLink,
                             onValueChange = { playlistLink = it },
                             label = { Text("Spotify Playlist Link or ID") },
-                            placeholder = { Text("https://open.spotify.com/playlist/...") },
+                            placeholder = { Text(if (importState.isActive) "An import is currently running..." else "https://open.spotify.com/playlist/...") },
                             singleLine = true,
+                            enabled = !importState.isActive,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp),
                             trailingIcon = {
-                                if (playlistLink.isNotEmpty()) {
+                                if (playlistLink.isNotEmpty() && !importState.isActive) {
                                     IconButton(onClick = { playlistLink = "" }) {
                                         Icon(painterResource(R.drawable.close), contentDescription = "Clear")
                                     }
@@ -132,7 +265,7 @@ fun SpotifyScreen(
                 .fillMaxWidth()
                 .height(48.dp),
             shape = RoundedCornerShape(12.dp),
-            enabled = !state.isLoading && playlistLink.isNotBlank(),
+            enabled = !state.isLoading && !importState.isActive && playlistLink.isNotBlank(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -140,7 +273,18 @@ fun SpotifyScreen(
                 disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
             )
         ) {
-            if (state.isLoading) {
+            if (importState.isActive) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Importing (${importState.percent}%)...",
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+                )
+            } else if (state.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     strokeWidth = 2.dp,
@@ -234,6 +378,7 @@ fun SpotifyScreen(
     if (showDialog) {
         importProgress?.let { progress ->
             val isFinished = progress.isFinished || progress.percent >= 1f
+            val isInterrupted = importState.status == SpotifyImportStatus.PAUSED_RETRYING
             DefaultDialog(
                 onDismiss = {
                     if (isFinished) {
@@ -244,10 +389,10 @@ fun SpotifyScreen(
                 },
                 title = {
                     Text(
-                        text = if (isFinished) {
-                            stringResource(R.string.spotify_import_complete)
-                        } else {
-                            stringResource(R.string.spotify_import_in_progress)
+                        text = when {
+                            isFinished -> stringResource(R.string.spotify_import_complete)
+                            isInterrupted -> "Resume Interrupted Import?"
+                            else -> stringResource(R.string.spotify_import_in_progress)
                         }
                     )
                 },
@@ -258,6 +403,21 @@ fun SpotifyScreen(
                             shape = CircleShape
                         ) {
                             Text(stringResource(android.R.string.ok))
+                        }
+                    } else if (isInterrupted) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Button(
+                                onClick = { viewModel.resumeInterruptedImport() },
+                                shape = CircleShape
+                            ) {
+                                Text("Resume")
+                            }
+                            TextButton(onClick = { viewModel.cancelImport() }) {
+                                Text(stringResource(android.R.string.cancel))
+                            }
                         }
                     } else {
                         Row(
@@ -278,29 +438,71 @@ fun SpotifyScreen(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.playlists) + ": " + progress.playlistName,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = if (isFinished) {
-                            stringResource(R.string.spotify_imported_songs_count, progress.currentSongIndex, progress.totalSongs)
-                        } else {
-                            stringResource(R.string.spotify_importing_songs_count, progress.currentSongIndex, progress.totalSongs)
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        if (!progress.artworkUrl.isNullOrBlank()) {
+                            AsyncImage(
+                                model = progress.artworkUrl,
+                                contentDescription = "Playlist Cover",
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop,
+                            )
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = progress.playlistName.ifBlank { stringResource(R.string.playlists) },
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            if (progress.currentStage.isNotBlank()) {
+                                Text(
+                                    text = progress.currentStage,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = "${progress.currentSongIndex} / ${progress.totalSongs} tracks",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = "${(progress.percent * 100).toInt()}%",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+
                     LinearProgressIndicator(
                         progress = { progress.percent },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(12.dp)
-                            .clip(RoundedCornerShape(6.dp)),
+                            .height(10.dp)
+                            .clip(RoundedCornerShape(5.dp)),
                         color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.surfaceVariant
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
+
+                    Text(
+                        text = "${progress.importedCount} imported • ${progress.skippedCount} skipped • ${progress.failedCount} failed",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }

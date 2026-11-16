@@ -74,14 +74,25 @@ flowchart TD
    - For each scraped track, performs an InnerTube search using `{track_name} {artist_name}`.
    - Evaluates search candidates against duration bounds (typically within ±5 seconds of the source track length).
    - Selects the optimal matching YouTube Music video ID.
-4. **Local Database Persistence:**
-   - Persists the resolved song entities and creates a new local `PlaylistEntity` within Room.
-   - Maps track associations via `PlaylistSongMap` records in a single database transaction, preserving sequential `position` indices.
-   - The imported playlist becomes fully playable offline and locally editable like any native playlist.
-5. **Background Execution & System Notifications:**
-   - **Do in Background:** The import dialog provides an explicit "Do in background" action alongside "Cancel". Tapping it immediately dismisses the modal dialog while execution continues uninterrupted in an application-scoped supervisor coroutine (`backgroundScope`).
-   - Users are free to leave the screen, browse music, play tracks, or exit the application.
-   - **Completion Notification:** Upon finishing track resolution and database storage, Rift posts an Android notification on the `"spotify_import_channel"` channel (`Playlist Imports`) displaying the playlist title and track count (`"Finished importing \"Today's Top Hits\" (50 songs)"`), along with a completion toast. Clicking the notification returns the user to the app.
+4. **Incremental Batch Database Persistence:**
+   - Handles large playlists (4,000+ tracks) incrementally in paged batches of 100 tracks rather than dumping thousands of records in a single monolithic transaction.
+   - Creates/updates `PlaylistEntity` immediately upon first batch, saving metadata, cover art, and progress.
+   - Uses bounded concurrency (`Semaphore(4)`) for YouTube Music track resolution.
+   - Persists each resolved batch directly into Room within its own transaction (`insert(songs)`, `insert(playlistSongMaps)`), ensuring already resolved songs are preserved if network drops or device sleeps.
+   - Deduplicates tracks and preserves intentional track sequences.
+   - Tracks metrics: `importedCount`, `skippedCount`, and `failedCount`. Unmatchable tracks are counted in `failedCount` without unnecessarily aborting the entire playlist.
+5. **Background Foreground Execution & Persistent Notifications (`SpotifyImportService`):**
+   - **DataSync Foreground Service:** Implemented as `SpotifyImportService`, a dedicated Android foreground service with `foregroundServiceType="dataSync"`.
+   - **Persistent Notification:** Remains active throughout import execution with:
+     - **Title:** `Importing Spotify playlist`
+     - **Content:** `Importing: [Playlist Name]`, `1,240 / 4,000 tracks (31% complete)`
+     - **Breakdown:** `1,200 imported • 30 skipped • 10 failed`
+     - **Progress Bar:** Genuine indeterminate progress during header fetch; determinate progress bar once total tracks are known.
+     - **Cancel Action:** Instant one-tap cancellation action (`ACTION_CANCEL_IMPORT`).
+     - **Throttling:** Notification updates throttled to a maximum of once every 500 ms to avoid system NotificationManager congestion.
+   - **Shared State Architecture (`SpotifyImportState`):** Exposes a unified StateFlow (`status`, `playlistName`, `artworkUrl`, `totalTracks`, `processedTracks`, `importedCount`, `skippedCount`, `failedCount`, `currentStage`) shared seamlessly across the foreground service, ViewModel, and UI.
+   - **Terminal Notifications:** On completion, updates to a dismissible completion notification; on failure, displays a clear explanation notification.
+   - **Do in Background:** Users can freely navigate away, lock their phone, or switch apps while the persistent foreground notification keeps the import active.
 
 ### Technical Limitations & Upstream Fragility
 - **Unofficial Partner Endpoint:** The Pathfinder GraphQL endpoint and its persisted query hash are internal Spotify assets. Spotify may change query hashes, modify schemas, or tighten rate-limits at any time without notice.

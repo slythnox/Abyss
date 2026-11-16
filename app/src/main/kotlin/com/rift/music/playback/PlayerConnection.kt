@@ -27,12 +27,14 @@ import com.rift.music.playback.MusicService.MusicBinder
 import com.rift.music.playback.asi.feedback.CommandOriginRegistry
 import com.rift.music.playback.asi.feedback.CommandSource
 import com.rift.music.playback.asi.feedback.UserPlaybackCommand
+import com.rift.music.playback.diagnostics.PlaybackErrorInfo
 import com.rift.music.playback.queue.Queue
 import com.rift.music.utils.reportException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChangedBy
@@ -202,6 +204,7 @@ class PlayerConnection(
     }
 
     val error = MutableStateFlow<PlaybackException?>(null)
+    val playbackError: StateFlow<PlaybackErrorInfo?> = service.playbackErrorInfo
     val isMuted = service.isMuted
 
     val waitingForNetworkConnection = service.waitingForNetworkConnection

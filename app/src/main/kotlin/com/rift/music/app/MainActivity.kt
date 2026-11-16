@@ -163,6 +163,8 @@ import com.rift.music.ui.component.backdrop.backdrops.rememberNavTransitionFreez
 import com.rift.music.ui.component.backdrop.backdrops.rememberPagerTransitionFreeze
 import com.rift.music.ui.component.prewarmHeroTint
 import com.rift.music.feature.search.SearchScreen
+import com.rift.music.feature.spotifyimport.SpotifyImportService
+import com.rift.music.feature.spotifyimport.SpotifyImportViewModel
 import com.rift.music.ui.utils.LocalSharedTransitionScope
 import com.rift.music.ui.utils.Motion
 import com.rift.music.ui.utils.isMorphRoute
@@ -1323,6 +1325,18 @@ class MainActivity : ComponentActivity() {
                 val ringtoneViewModel: com.rift.music.feature.settings.RingtoneViewModel = viewModel()
                 val ringtoneUiState by ringtoneViewModel.uiState.collectAsStateWithLifecycle()
 
+                LaunchedEffect(playerConnection) {
+                    playerConnection?.playbackError?.collect { err ->
+                        if (err != null) {
+                            snackbarHostState.showSnackbar(
+                                message = err.userMessage,
+                                withDismissAction = true,
+                                duration = androidx.compose.material3.SnackbarDuration.Short
+                            )
+                        }
+                    }
+                }
+
                 LaunchedEffect(Unit) {
                     if (pendingIntent != null) {
                         handleDeepLinkIntent(pendingIntent!!, navController)
@@ -2387,6 +2401,11 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleDeepLinkIntent(intent: Intent, navController: NavHostController) {
+        if (intent.action == SpotifyImportService.ACTION_OPEN_SPOTIFY_IMPORT) {
+            SpotifyImportViewModel.showImportDialog()
+            navController.navigate("settings/spotify") { launchSingleTop = true }
+            return
+        }
         val uri = intent.data ?: intent.extras?.getString(Intent.EXTRA_TEXT)?.toUri() ?: return
         intent.data = null
         intent.removeExtra(Intent.EXTRA_TEXT)
