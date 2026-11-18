@@ -153,7 +153,7 @@ fun AudioQualityBottomSheet(
                     Icon(
                         painter = painterResource(R.drawable.graphic_eq),
                         contentDescription = null,
-                        tint = Color(0xFFFF4D68),
+                        tint = Color(0xFF5B9DFF),
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -203,7 +203,7 @@ fun AudioQualityBottomSheet(
                         label = "wifiBg"
                     )
                     val wifiBorderColor by animateColorAsState(
-                        targetValue = if (isWifiActive) Color(0xFFF20329).copy(alpha = 0.6f) else Color.Transparent,
+                        targetValue = if (isWifiActive) Color(0xFF007DFE).copy(alpha = 0.6f) else Color.Transparent,
                         animationSpec = tween(200),
                         label = "wifiBorder"
                     )
@@ -248,7 +248,7 @@ fun AudioQualityBottomSheet(
                         label = "mobileBg"
                     )
                     val mobileBorderColor by animateColorAsState(
-                        targetValue = if (isMobileActive) Color(0xFFF20329).copy(alpha = 0.6f) else Color.Transparent,
+                        targetValue = if (isMobileActive) Color(0xFF007DFE).copy(alpha = 0.6f) else Color.Transparent,
                         animationSpec = tween(200),
                         label = "mobileBorder"
                     )
@@ -325,7 +325,7 @@ fun AudioQualityBottomSheet(
                         color = if (isSelected) Color(0xFF2E1216) else Color(0xFF16181D),
                         border = BorderStroke(
                             width = if (isSelected) 1.5.dp else 1.dp,
-                            color = if (isSelected) Color(0xFFF20329).copy(alpha = 0.55f) else Color(0xFF252932)
+                            color = if (isSelected) Color(0xFF007DFE).copy(alpha = 0.55f) else Color(0xFF252932)
                         ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -381,7 +381,7 @@ fun AudioQualityBottomSheet(
                                 Box(
                                     modifier = Modifier
                                         .size(24.dp)
-                                        .background(color = Color(0xFFF20329), shape = CircleShape),
+                                        .background(color = Color(0xFF007DFE), shape = CircleShape),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Icon(

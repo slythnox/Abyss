@@ -72,8 +72,7 @@ fun RandomizeGridItem(
                 .weight(1f)
                 .aspectRatio(1f)
                 .clip(shape)
-                .background(MaterialTheme.colorScheme.secondaryContainer)
-                .clickable(onClick = onClick),
+                .background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
             // Die Dots (5-pattern)

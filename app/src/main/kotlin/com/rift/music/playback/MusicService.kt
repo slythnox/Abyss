@@ -197,6 +197,9 @@ import com.rift.music.playback.queue.filterVideoSongs
 import com.rift.music.utils.CoilBitmapLoader
 import com.rift.music.core.common.NetworkConnectivityObserver
 import com.rift.music.integration.sync.SyncUtils
+import com.rift.music.playback.resolver.PlaybackStreamCacheRepository
+import com.rift.music.playback.resolver.ProviderMappingRepository
+import com.rift.music.playback.resolver.ResolutionDeduplicator
 import com.rift.music.utils.YTPlayerUtils
 import com.rift.music.utils.dataStore
 import com.rift.music.utils.get
@@ -292,6 +295,21 @@ class MusicService :
 
     @Inject
     lateinit var widgetManager: vivimusicWidgetManager
+
+    @Inject
+    lateinit var providerMappingRepository: ProviderMappingRepository
+
+    @Inject
+    lateinit var playbackStreamCacheRepository: PlaybackStreamCacheRepository
+
+    @Inject
+    lateinit var resolutionDeduplicator: ResolutionDeduplicator
+
+    @Volatile
+    private var cachedTidalStreamingEnabled: Boolean = false
+
+    @Volatile
+    private var cachedSpineEnabled: Boolean = false
 
     private lateinit var audioManager: AudioManager
     private var audioFocusRequest: AudioFocusRequest? = null
@@ -1009,6 +1027,14 @@ class MusicService :
                 cachedDisableLoadMoreWhenRepeatAll = prefs.disableLoadMoreWhenRepeatAll
             }
 
+        dataStore.data
+            .map { (it[EnableTidalStreamingKey] ?: false) to (it[EnabledModulesKey] != "[]" && it[EnabledModulesKey] != null) }
+            .distinctUntilChanged()
+            .collect(scope) { (tidal, spine) ->
+                cachedTidalStreamingEnabled = tidal
+                cachedSpineEnabled = spine
+            }
+
         if (dataStore.get(PersistentQueueKey, true)) {
             val queueFile = filesDir.resolve(PERSISTENT_QUEUE_FILE)
             if (queueFile.exists()) {
@@ -1156,12 +1182,18 @@ class MusicService :
             .setLoadControl(
                 androidx.media3.exoplayer.DefaultLoadControl.Builder()
                     .setBufferDurationsMs(
-                        50_000,   // Min buffer: 50s
+                        15_000,   // Min buffer: 15s
                         50_000,   // Max buffer: 50s
-                        750,      // Buffer for playback: 750ms Ã¢â‚¬â€ start audio as soon as we have it
-                        2_000     // Buffer for playback after re-buffer: 2s
+                        1_000,    // Buffer for playback: 1000ms
+                        2_500     // Buffer for playback after re-buffer: 2.5s
                     )
+                    .setBackBuffer(15_000, true)
                     .build()
+            )
+            .setTrackSelector(
+                androidx.media3.exoplayer.trackselection.DefaultTrackSelector(this).apply {
+                    setParameters(buildUponParameters().setTrackTypeDisabled(C.TRACK_TYPE_VIDEO, true))
+                }
             )
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
@@ -1619,36 +1651,79 @@ class MusicService :
                 val mediaId = item.mediaId
                 if (mediaId.isBlank()) continue
 
-                val losslessOn = audioQuality == com.rift.music.constants.AudioQuality.LOSSLESS || dataStore.get(EnableTidalStreamingKey, false)
-                val spineEnabled = dataStore.get(EnabledModulesKey, "[]") != "[]"
+                val resolvedMediaId = if (mediaId.startsWith("spotify:")) {
+                    val sourceId = mediaId.removePrefix("spotify:")
+                    val mapping = providerMappingRepository.getValidMapping(sourceId, "youtube")
+                    mapping?.providerTrackId ?: run {
+                        val song = database.getSongBySourceId(sourceId)
+                            ?: database.getSongById(mediaId)
+                        if (song != null) {
+                            providerMappingRepository.resolveAndPersist(song, "youtube")?.providerTrackId
+                        } else null
+                    }
+                } else {
+                    mediaId
+                } ?: continue
+
+                val losslessOn = audioQuality == com.rift.music.constants.AudioQuality.LOSSLESS || cachedTidalStreamingEnabled
+                val spineEnabled = cachedSpineEnabled
                 val effKey = when {
-                    losslessOn || spineEnabled -> "$mediaId#flac"
-                    else -> mediaId
+                    losslessOn || spineEnabled -> "$resolvedMediaId#flac"
+                    else -> resolvedMediaId
+                }
+                val effProvider = when {
+                    spineEnabled -> "spine"
+                    losslessOn -> "tidal"
+                    else -> "youtube"
                 }
 
                 // Check if already in cache or downloaded
                 val cached = songUrlCache[effKey]?.takeIf { it.second > System.currentTimeMillis() }
                 if (cached != null) continue
-                if (isFullyCached(downloadCache, mediaId) || isFullyCached(playerCache, effKey)) continue
+                val streamCacheHit = playbackStreamCacheRepository.getValidStream(resolvedMediaId, effProvider, audioQuality.name)
+                if (streamCacheHit != null) {
+                    cacheSongUrl(effKey, streamCacheHit.streamUrl, ((streamCacheHit.expiresAtMs - System.currentTimeMillis()) / 1000).toInt())
+                    continue
+                }
+                if (isFullyCached(downloadCache, resolvedMediaId) || isFullyCached(playerCache, effKey)) continue
 
-                Timber.tag(TAG).d("PREFETCHING STREAM: Upcoming track index=$idx mediaId=$mediaId")
+                Timber.tag(TAG).d("PREFETCHING STREAM: Upcoming track index=$idx resolvedMediaId=$resolvedMediaId (mediaId=$mediaId)")
                 try {
-                    val playbackData = YTPlayerUtils.playerResponseForPlayback(
-                        mediaId,
-                        audioQuality = audioQuality,
-                        connectivityManager = connectivityManager,
-                        context = this@MusicService,
-                        forceStandardAudio = forceStandardAudioMediaIds.contains(mediaId),
-                    ).getOrNull()
+                    val playbackData = resolutionDeduplicator.execute(effKey) {
+                        YTPlayerUtils.playerResponseForPlayback(
+                            resolvedMediaId,
+                            audioQuality = audioQuality,
+                            connectivityManager = connectivityManager,
+                            context = this@MusicService,
+                            forceStandardAudio = forceStandardAudioMediaIds.contains(resolvedMediaId),
+                        )
+                    }.getOrNull()
 
                     if (playbackData != null) {
                         val streamUrl = playbackData.streamUrl
                         if (playbackData.isTidalStream || playbackData.isSpineStream) {
-                            losslessStreamMediaIds.add(mediaId)
+                            losslessStreamMediaIds.add(resolvedMediaId)
                         } else {
-                            losslessStreamMediaIds.remove(mediaId)
+                            losslessStreamMediaIds.remove(resolvedMediaId)
                         }
                         cacheSongUrl(effKey, streamUrl, playbackData.streamExpiresInSeconds)
+                        playbackStreamCacheRepository.cacheStream(
+                            trackId = resolvedMediaId,
+                            provider = when {
+                                playbackData.isAddonStream -> playbackData.addonName ?: "addon"
+                                playbackData.isSpineStream -> "spine"
+                                playbackData.isTidalStream -> "tidal"
+                                playbackData.isSaavnStream -> "jiosaavn"
+                                else -> "youtube"
+                            },
+                            quality = audioQuality.name,
+                            streamUrl = streamUrl,
+                            expiresInSeconds = playbackData.streamExpiresInSeconds,
+                            formatMimeType = playbackData.format.mimeType.split(";")[0],
+                            bitrate = playbackData.format.bitrate,
+                            sampleRate = playbackData.format.audioSampleRate,
+                            contentLength = playbackData.format.contentLength ?: 0L,
+                        )
 
                         val format = playbackData.format
                         val loudnessDb = playbackData.audioConfig?.loudnessDb
@@ -1656,7 +1731,7 @@ class MusicService :
                         database.query {
                             upsert(
                                 FormatEntity(
-                                    id = mediaId,
+                                    id = resolvedMediaId,
                                     itag = format.itag,
                                     mimeType = format.mimeType.split(";")[0],
                                     codecs = format.mimeType.split("codecs=").getOrNull(1)?.removeSurrounding("\"") ?: "mp3",
@@ -1669,7 +1744,7 @@ class MusicService :
                                 )
                             )
                         }
-                        recoverSong(mediaId, playbackData)
+                        recoverSong(resolvedMediaId, playbackData)
                         Timber.tag(TAG).d("âœ“ PREFETCHED STREAM: Upcoming track index=$idx mediaId=$mediaId")
                     }
                 } catch (e: Exception) {
@@ -2365,6 +2440,11 @@ class MusicService :
         mediaItem: MediaItem?,
         reason: Int,
     ) {
+        // Cancel active retry and stall recovery jobs from previous track to prevent race conditions
+        retryJob?.cancel()
+        retryJob = null
+        stallRecoveryJob?.cancel()
+        stallRecoveryJob = null
         Timber.tag(TAG).d(
             "SKIP_DEBUG onMediaItemTransition: reason=$reason (0=REPEAT,1=AUTO,2=SEEK,3=PLAYLIST_CHANGED) " +
                 "newIndex=${player.currentMediaItemIndex} newId=${mediaItem?.mediaId} " +
@@ -3029,6 +3109,13 @@ class MusicService :
         // ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED, forever.
         songUrlCache.remove(mediaId)
         songUrlCache.remove("$mediaId#flac")
+        scope.launch(Dispatchers.IO) {
+            playbackStreamCacheRepository.invalidateAllForTrack(mediaId)
+            val base = mediaId.removeSuffix("#flac")
+            if (base != mediaId) {
+                playbackStreamCacheRepository.invalidateAllForTrack(base)
+            }
+        }
 
         // Clear player cache
         for (key in listOf(mediaId, "$mediaId#flac")) {
@@ -3248,10 +3335,15 @@ class MusicService :
             // Wait before retry
             delay(RETRY_DELAY_MS)
 
-            // Force re-prepare from position 0 to avoid range issues
+            // Preserve current position on 416 recovery instead of resetting to 0:00
             val shouldResume = player.playWhenReady || player.isPlaying || wasPlayingBeforeAudioFocusLoss
+            if (!playerInitialized.value || player.currentMediaItem?.mediaId != mediaId) {
+                Timber.tag(TAG).w("Track changed during 416 recovery for $mediaId, aborting stale retry")
+                return@launch
+            }
+            val currentPosition = player.currentPosition
             val currentIndex = player.currentMediaItemIndex
-            player.seekTo(currentIndex, 0)
+            player.seekTo(currentIndex, currentPosition)
             player.prepare()
             if (shouldResume && hasAudioFocus && playerInitialized.value) {
                 if (castConnectionHandler?.isCasting?.value != true) {
@@ -3288,6 +3380,10 @@ class MusicService :
 
             // Re-prepare the player
             val shouldResume = player.playWhenReady || player.isPlaying || wasPlayingBeforeAudioFocusLoss
+            if (!playerInitialized.value || player.currentMediaItem?.mediaId != mediaId) {
+                Timber.tag(TAG).w("Track changed during page reload recovery for $mediaId, aborting stale retry")
+                return@launch
+            }
             val currentPosition = player.currentPosition
             val currentIndex = player.currentMediaItemIndex
             player.seekTo(currentIndex, currentPosition)
@@ -3330,6 +3426,10 @@ class MusicService :
 
             // Seek to current position to force URL re-resolution
             val shouldResume = player.playWhenReady || player.isPlaying || wasPlayingBeforeAudioFocusLoss
+            if (!playerInitialized.value || player.currentMediaItem?.mediaId != mediaId) {
+                Timber.tag(TAG).w("Track changed during expired URL recovery for $mediaId, aborting stale retry")
+                return@launch
+            }
             val currentPosition = player.currentPosition
             val currentIndex = player.currentMediaItemIndex
             player.seekTo(currentIndex, currentPosition)
@@ -3361,6 +3461,10 @@ class MusicService :
             delay(RETRY_DELAY_MS)
 
             val shouldResume = player.playWhenReady || player.isPlaying || wasPlayingBeforeAudioFocusLoss
+            if (!playerInitialized.value || player.currentMediaItem?.mediaId != mediaId) {
+                Timber.tag(TAG).w("Track changed during generic IO recovery for $mediaId, aborting stale retry")
+                return@launch
+            }
             val currentPosition = player.currentPosition
             val currentIndex = player.currentMediaItemIndex
             player.seekTo(currentIndex, currentPosition)
@@ -3629,42 +3733,70 @@ class MusicService :
         ).show()
     }
 
-    private fun createDataSourceFactory(): DataSource.Factory {
+        private fun createDataSourceFactory(): DataSource.Factory {
         return ResolvingDataSource.Factory(createCacheDataSource()) { dataSpec ->
-            val mediaId = dataSpec.key ?: error("No media id")
+            val rawMediaId = dataSpec.key ?: error("No media id")
 
             // Local files (content://, file://, /storage/) - skip YouTube resolution
             // DefaultDataSource in the chain handles local URIs natively
-            if (mediaId.startsWith("content://") ||
-                mediaId.startsWith("file://") ||
-                mediaId.startsWith("/storage/")
+            if (rawMediaId.startsWith("content://") ||
+                rawMediaId.startsWith("file://") ||
+                rawMediaId.startsWith("/storage/")
             ) {
                 return@Factory dataSpec
+            }
+
+            // Resolve Spotify IDs or foreign URIs to a playable target provider track ID
+            val mediaId = if (rawMediaId.startsWith("spotify:")) {
+                val sourceId = rawMediaId.removePrefix("spotify:")
+                val mapping = runBlocking(Dispatchers.IO) {
+                    providerMappingRepository.getValidMapping(sourceId, "youtube")
+                }
+                if (mapping != null) {
+                    mapping.providerTrackId
+                } else {
+                    val song = runBlocking(Dispatchers.IO) {
+                        database.getSongBySourceId(sourceId)
+                            ?: database.getSongById(rawMediaId)
+                    }
+                    val resolved = if (song != null) {
+                        runBlocking(Dispatchers.IO) {
+                            providerMappingRepository.resolveAndPersist(song, "youtube")
+                        }
+                    } else null
+                    resolved?.providerTrackId ?: throw PlaybackException(
+                        getString(R.string.error_unknown),
+                        IllegalStateException("Unable to resolve Spotify track: $rawMediaId"),
+                        PlaybackException.ERROR_CODE_REMOTE_ERROR
+                    )
+                }
+            } else {
+                rawMediaId
             }
 
             // Lossless namespaces the whole cache chain so FLAC and Opus/AAC bytes
             // for the same video never collide across a toggle. Streaming only:
             // offline downloads live in the plain (Opus) namespace.
             // Spine streams also use lossless namepacing to avoid cache collisions.
-            val losslessOn = audioQuality == com.rift.music.constants.AudioQuality.LOSSLESS || dataStore.get(EnableTidalStreamingKey, false)
-            val spineEnabled = dataStore.get(EnabledModulesKey, "[]") != "[]"
+            val losslessOn = audioQuality == com.rift.music.constants.AudioQuality.LOSSLESS || cachedTidalStreamingEnabled
+            val spineEnabled = cachedSpineEnabled
             val effKey = when {
                 losslessOn || spineEnabled -> "$mediaId#flac"
                 else -> mediaId
             }
-            Timber.tag("SpineDebug").d("DataSourceResolver: mediaId=$mediaId spineEnabled=$spineEnabled losslessOn=$losslessOn effKey=$effKey")
-            val spec = if (effKey == mediaId) dataSpec else dataSpec.buildUpon().setKey(effKey).build()
+            val effProvider = when {
+                spineEnabled -> "spine"
+                losslessOn -> "tidal"
+                else -> "youtube"
+            }
+            Timber.tag("SpineDebug").d("DataSourceResolver: mediaId=$mediaId (raw=$rawMediaId) spineEnabled=$spineEnabled losslessOn=$losslessOn effKey=$effKey")
+            val spec = if (effKey == dataSpec.key) dataSpec else dataSpec.buildUpon().setKey(effKey).build()
 
             // Check if we need to bypass cache for quality change
             val shouldBypassCache = bypassCacheForQualityChange.contains(mediaId)
 
             if (!shouldBypassCache) {
-                // Downloads are always cached under the plain mediaId (see
-                // DownloadRequest.setCustomCacheKey(song.id) at every download call
-                // site) regardless of the lossless/Spine toggles, so they must be
-                // looked up under mediaId Ã¢â‚¬â€ not effKey Ã¢â‚¬â€ or a downloaded song becomes
-                // unplayable the moment either toggle is on, since the lookup misses
-                // and falls through to a network re-fetch.
+                // Downloads are always cached under the plain mediaId regardless of toggles
                 if (downloadCache.isCached(
                         mediaId,
                         dataSpec.position,
@@ -3672,7 +3804,7 @@ class MusicService :
                     )
                 ) {
                     scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
-                    return@Factory dataSpec
+                    return@Factory spec.buildUpon().setKey(mediaId).build()
                 }
 
                 if (playerCache.isCached(
@@ -3689,21 +3821,32 @@ class MusicService :
                     scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
                     return@Factory spec.withUri(it.first.toUri())
                 }
+
+                val cachedStream = runBlocking(Dispatchers.IO) {
+                    playbackStreamCacheRepository.getValidStream(mediaId, effProvider, audioQuality.name)
+                }
+                if (cachedStream != null) {
+                    cacheSongUrl(effKey, cachedStream.streamUrl, ((cachedStream.expiresAtMs - System.currentTimeMillis()) / 1000).toInt())
+                    scope.launch(Dispatchers.IO) { recoverSong(mediaId) }
+                    return@Factory spec.withUri(cachedStream.streamUrl.toUri())
+                }
             } else {
                 Timber.tag("MusicService").i("BYPASSING CACHE for $mediaId due to quality change")
             }
 
-            Timber.tag("MusicService").i("FETCHING STREAM: $mediaId | quality=$audioQuality")
+            Timber.tag("MusicService").i("FETCHING STREAM: $mediaId (raw=$rawMediaId) | quality=$audioQuality")
             val fetchStart = SystemClock.elapsedRealtime()
             val playbackData = try {
                 runBlocking(Dispatchers.IO) {
-                    YTPlayerUtils.playerResponseForPlayback(
-                        mediaId,
-                        audioQuality = audioQuality,
-                        connectivityManager = connectivityManager,
-                        context = this@MusicService,
-                        forceStandardAudio = forceStandardAudioMediaIds.contains(mediaId),
-                    )
+                    resolutionDeduplicator.execute(effKey) {
+                        YTPlayerUtils.playerResponseForPlayback(
+                            mediaId,
+                            audioQuality = audioQuality,
+                            connectivityManager = connectivityManager,
+                            context = this@MusicService,
+                            forceStandardAudio = forceStandardAudioMediaIds.contains(mediaId),
+                        )
+                    }
                 }.getOrElse { throwable ->
                     when (throwable) {
                         is PlaybackException -> throw throwable
@@ -3804,6 +3947,25 @@ class MusicService :
                 }
 
                 cacheSongUrl(effKey, streamUrl, nonNullPlayback.streamExpiresInSeconds)
+                runBlocking(Dispatchers.IO) {
+                    playbackStreamCacheRepository.cacheStream(
+                        trackId = mediaId,
+                        provider = when {
+                            nonNullPlayback.isAddonStream -> nonNullPlayback.addonName ?: "addon"
+                            nonNullPlayback.isSpineStream -> "spine"
+                            nonNullPlayback.isTidalStream -> "tidal"
+                            nonNullPlayback.isSaavnStream -> "jiosaavn"
+                            else -> "youtube"
+                        },
+                        quality = audioQuality.name,
+                        streamUrl = streamUrl,
+                        expiresInSeconds = nonNullPlayback.streamExpiresInSeconds,
+                        formatMimeType = nonNullPlayback.format.mimeType.split(";")[0],
+                        bitrate = nonNullPlayback.format.bitrate,
+                        sampleRate = nonNullPlayback.format.audioSampleRate,
+                        contentLength = nonNullPlayback.format.contentLength ?: 0L,
+                    )
+                }
 
                 // Direct static file URLs (Tidal, Spine, JioSaavn, HTTP Add-on)
                 // must not be sliced into CHUNK_LENGTH windows. Non-YouTube CDNs and
@@ -3815,22 +3977,24 @@ class MusicService :
                     nonNullPlayback.isAddonStream ||
                     nonNullPlayback.isSaavnStream
 
-                PlaybackDiagnostics.record(
-                    eventType = PlaybackEventType.PROVIDER_SELECTION,
-                    mediaId = mediaId,
-                    title = player.currentMediaItem?.mediaMetadata?.title?.toString(),
-                    provider = when {
-                        nonNullPlayback.isAddonStream -> nonNullPlayback.addonName ?: "Add-on"
-                        nonNullPlayback.isSpineStream -> "Spine"
-                        nonNullPlayback.isTidalStream -> "Tidal"
-                        nonNullPlayback.isSaavnStream -> "JioSaavn"
-                        else -> "YouTube"
-                    },
-                    playbackState = player.playbackState,
-                    playWhenReady = player.playWhenReady,
-                    isPlaying = player.isPlaying,
-                    details = "Resolved stream url (external=$isExternalStaticStream)"
-                )
+                scope.launch {
+                    PlaybackDiagnostics.record(
+                        eventType = PlaybackEventType.PROVIDER_SELECTION,
+                        mediaId = mediaId,
+                        title = player.currentMediaItem?.mediaMetadata?.title?.toString(),
+                        provider = when {
+                            nonNullPlayback.isAddonStream -> nonNullPlayback.addonName ?: "Add-on"
+                            nonNullPlayback.isSpineStream -> "Spine"
+                            nonNullPlayback.isTidalStream -> "Tidal"
+                            nonNullPlayback.isSaavnStream -> "JioSaavn"
+                            else -> "YouTube"
+                        },
+                        playbackState = player.playbackState,
+                        playWhenReady = player.playWhenReady,
+                        isPlaying = player.isPlaying,
+                        details = "Resolved stream url (external=$isExternalStaticStream)"
+                    )
+                }
 
                 // Direct static file URLs (Tidal, Spine, JioSaavn, HTTP Add-on) and standard YouTube streams
                 // must stream using Media3's open-ended byte ranges without manual CHUNK_LENGTH slicing,

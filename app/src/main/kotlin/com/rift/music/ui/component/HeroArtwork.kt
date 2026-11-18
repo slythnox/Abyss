@@ -54,6 +54,7 @@ import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
 import com.rift.music.R
+import com.rift.music.constants.AppBackgroundColorKey
 import com.rift.music.constants.DynamicThemeKey
 import com.rift.music.constants.PureBlackHeroBackgroundKey
 import com.rift.music.constants.SelectedThemeColorKey
@@ -240,16 +241,12 @@ fun rememberHeroTint(url: String?): Color {
 
 /**
  * The screen background tint actually used — [contentTint] (per-screen, derived
- * from artwork/thumbnails) when the user is on system/dynamic color, or their
- * own picked color (Theme settings) as a flat override when they're not. Ties
- * "custom theme color" directly to what screens paint behind their content,
- * not just Material's accent colors.
+ * from artwork/thumbnails) or the user's explicit [AppBackgroundColorKey] if set.
  */
 @Composable
 fun rememberAppBackgroundTint(contentTint: Color): Color {
-    val (isDynamic) = rememberPreference(DynamicThemeKey, defaultValue = true)
-    val (selectedColorInt) = rememberPreference(SelectedThemeColorKey, defaultValue = DefaultThemeColor.toArgb())
-    return if (isDynamic) contentTint else Color(selectedColorInt)
+    val (colorInt) = rememberPreference(AppBackgroundColorKey, defaultValue = 0)
+    return if (colorInt != 0) Color(colorInt) else contentTint
 }
 
 /**

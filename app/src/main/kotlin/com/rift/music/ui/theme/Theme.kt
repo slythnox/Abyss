@@ -28,22 +28,22 @@ import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
 import com.materialkolor.score.Score
 
-val DefaultThemeColor = Color(0xFFF20329)
+val DefaultThemeColor = Color(0xFF007DFE)
 
 /**
- * The user's chosen accent color, provided app-wide. Defaults to Rift logo crimson red.
+ * The user's chosen accent color, provided app-wide. Defaults to Abyss electric blue.
  */
 val LocalAccentColor = androidx.compose.runtime.compositionLocalOf { DefaultThemeColor }
 
 /**
- * The accent tuned for readable text — returns Rift logo bright crimson red (0xFFFF4D68).
+ * The accent tuned for readable text — returns Abyss bright electric blue (0xFF5B9DFF).
  */
 fun accentTextColor(accent: Color, dark: Boolean): Color {
-    return Color(0xFFFF4D68)
+    return Color(0xFF5B9DFF)
 }
 
 /** Accent-contrast text color, provided app-wide from the current accent + theme. */
-val LocalAccentTextColor = androidx.compose.runtime.compositionLocalOf { Color(0xFFFF4D68) }
+val LocalAccentTextColor = androidx.compose.runtime.compositionLocalOf { Color(0xFF5B9DFF) }
 
 @Composable
 fun NapsterTheme(
@@ -252,8 +252,8 @@ fun ColorScheme.appleSurfaces() = copy(
  */
 fun ColorScheme.accentText(accent: Color, dark: Boolean): ColorScheme {
     val body = if (dark) Color(0xFFF1F5F9) else Color(0xFF0F172A)
-    val redAccent = Color(0xFFFF4D68)
-    val redPrimary = Color(0xFFF20329)
+    val blueAccent = Color(0xFF5B9DFF)
+    val bluePrimary = Color(0xFF007DFE)
     val slateSubtitle = Color(0xFF9EACB9)
     return copy(
         onSurface = body,
@@ -261,12 +261,12 @@ fun ColorScheme.accentText(accent: Color, dark: Boolean): ColorScheme {
         onSurfaceVariant = slateSubtitle,
         onSecondaryContainer = slateSubtitle,
         onTertiaryContainer = slateSubtitle,
-        onPrimaryContainer = redAccent,
+        onPrimaryContainer = blueAccent,
         onSecondary = slateSubtitle,
         secondary = slateSubtitle,
-        primary = redPrimary,
+        primary = bluePrimary,
         onPrimary = Color.White,
-        primaryContainer = Color(0xFF2E1216),
+        primaryContainer = Color(0xFF0B192C),
         secondaryContainer = Color(0xFF16181D),
     )
 }

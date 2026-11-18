@@ -57,7 +57,7 @@ inline fun <reified T : Enum<T>> LibrarySortButton(
             onClick = { menuExpanded = !menuExpanded },
             shape = RoundedCornerShape(20.dp),
             color = Color(0xFF2E1216),
-            border = BorderStroke(1.dp, Color(0xFFF20329).copy(alpha = 0.55f)),
+            border = BorderStroke(1.dp, Color(0xFF007DFE).copy(alpha = 0.55f)),
             modifier = Modifier.height(38.dp),
         ) {
             Row(
@@ -68,7 +68,7 @@ inline fun <reified T : Enum<T>> LibrarySortButton(
                 Icon(
                     painter = painterResource(R.drawable.tune),
                     contentDescription = null,
-                    tint = Color(0xFFFF4D68),
+                    tint = Color(0xFF5B9DFF),
                     modifier = Modifier.size(18.dp),
                 )
                 Text(
@@ -101,7 +101,7 @@ inline fun <reified T : Enum<T>> LibrarySortButton(
                     text = {
                         Text(
                             text = "List view",
-                            color = if (viewType == LibraryViewType.LIST) Color(0xFFFF4D68) else Color.White,
+                            color = if (viewType == LibraryViewType.LIST) Color(0xFF5B9DFF) else Color.White,
                             fontSize = 14.sp,
                             fontWeight = if (viewType == LibraryViewType.LIST) FontWeight.Bold else FontWeight.Normal,
                         )
@@ -110,7 +110,7 @@ inline fun <reified T : Enum<T>> LibrarySortButton(
                         Icon(
                             painter = painterResource(R.drawable.list),
                             contentDescription = null,
-                            tint = if (viewType == LibraryViewType.LIST) Color(0xFFFF4D68) else Color(0xFF9EACB9),
+                            tint = if (viewType == LibraryViewType.LIST) Color(0xFF5B9DFF) else Color(0xFF9EACB9),
                             modifier = Modifier.size(18.dp),
                         )
                     },
@@ -119,7 +119,7 @@ inline fun <reified T : Enum<T>> LibrarySortButton(
                             Icon(
                                 painter = painterResource(R.drawable.check),
                                 contentDescription = null,
-                                tint = Color(0xFFFF4D68),
+                                tint = Color(0xFF5B9DFF),
                                 modifier = Modifier.size(16.dp),
                             )
                         }
@@ -133,7 +133,7 @@ inline fun <reified T : Enum<T>> LibrarySortButton(
                     text = {
                         Text(
                             text = "Grid view",
-                            color = if (viewType == LibraryViewType.GRID) Color(0xFFFF4D68) else Color.White,
+                            color = if (viewType == LibraryViewType.GRID) Color(0xFF5B9DFF) else Color.White,
                             fontSize = 14.sp,
                             fontWeight = if (viewType == LibraryViewType.GRID) FontWeight.Bold else FontWeight.Normal,
                         )
@@ -142,7 +142,7 @@ inline fun <reified T : Enum<T>> LibrarySortButton(
                         Icon(
                             painter = painterResource(R.drawable.grid_view),
                             contentDescription = null,
-                            tint = if (viewType == LibraryViewType.GRID) Color(0xFFFF4D68) else Color(0xFF9EACB9),
+                            tint = if (viewType == LibraryViewType.GRID) Color(0xFF5B9DFF) else Color(0xFF9EACB9),
                             modifier = Modifier.size(18.dp),
                         )
                     },
@@ -151,7 +151,7 @@ inline fun <reified T : Enum<T>> LibrarySortButton(
                             Icon(
                                 painter = painterResource(R.drawable.check),
                                 contentDescription = null,
-                                tint = Color(0xFFFF4D68),
+                                tint = Color(0xFF5B9DFF),
                                 modifier = Modifier.size(16.dp),
                             )
                         }
@@ -173,7 +173,7 @@ inline fun <reified T : Enum<T>> LibrarySortButton(
                     text = {
                         Text(
                             text = stringResource(sortTypeText(type)),
-                            color = if (isSelected) Color(0xFFFF4D68) else Color.White,
+                            color = if (isSelected) Color(0xFF5B9DFF) else Color.White,
                             fontSize = 14.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                         )
@@ -183,7 +183,7 @@ inline fun <reified T : Enum<T>> LibrarySortButton(
                             Icon(
                                 painter = painterResource(R.drawable.check),
                                 contentDescription = null,
-                                tint = Color(0xFFFF4D68),
+                                tint = Color(0xFF5B9DFF),
                                 modifier = Modifier.size(16.dp),
                             )
                         }
@@ -212,7 +212,7 @@ inline fun <reified T : Enum<T>> LibrarySortButton(
                     Icon(
                         painter = painterResource(R.drawable.arrow_downward),
                         contentDescription = null,
-                        tint = Color(0xFFFF4D68),
+                        tint = Color(0xFF5B9DFF),
                         modifier = Modifier
                             .size(16.dp)
                             .graphicsLayer { rotationZ = if (sortDescending) 0f else 180f },

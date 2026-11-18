@@ -1,7 +1,17 @@
 {
-  "description": "Rift 1.0.5 — Official Rebrand to Rift, Modern Red Accent Identity, Widget Visual Polish, and Comprehensive Performance Overhaul.",
+  "description": "Abyss — Official Rebrand to Abyss, Planetary Horizon Identity, Header and Player Streamlining, and Persistent Playlist Intelligence.",
   "image": "",
   "changelog": [
+    {
+      "title": "Official Rebrand to Abyss and Visual Identity",
+      "items": [
+        "Full application rebrand to Abyss across launcher icons, splash screen, and interface typography, preserving complete update compatibility with applicationId = \"com.napster.music\".",
+        "Integrated the approved Abyss master logo featuring deep cosmic void, gradient wordmark, and vibrant planetary horizon.",
+        "Adaptive and monochrome icon support for Android 13+ Material You themed app icons across all device densities.",
+        "Home Screen streamline: Reclaimed vertical space by removing the top app-name heading while maintaining status-bar insets.",
+        "Now Playing screen streamline: Removed the sound bar below player controls completely to maximize screen space while preserving all transport, seek bar, and audio engine capabilities."
+      ]
+    },
     {
       "title": "Official Rebrand to Rift & Visual Identity",
       "items": [

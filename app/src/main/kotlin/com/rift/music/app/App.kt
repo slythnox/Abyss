@@ -71,10 +71,13 @@ class App : Application(), SingletonImageLoader.Factory {
 
     /**
      * Held as a [Provider] so injecting it here does not itself build the graph
-     * this warms â€” see the warm-up in [onCreate].
+     * this warms — see the warm-up in [onCreate].
      */
     @Inject
     lateinit var downloadUtilProvider: Provider<com.rift.music.playback.DownloadUtil>
+
+    @Inject
+    lateinit var legacyLibraryBackfillCoordinatorProvider: Provider<com.rift.music.playback.resolver.LegacyLibraryBackfillCoordinator>
 
     override fun onCreate() {
         super.onCreate()
@@ -128,6 +131,16 @@ class App : Application(), SingletonImageLoader.Factory {
         applicationScope.launch(Dispatchers.IO) {
             runCatching { downloadUtilProvider.get() }
                 .onFailure { Timber.e(it, "Cache warm-up failed") }
+        }
+
+        // Asynchronously normalize legacy imported playlists and schedule background enrichment
+        applicationScope.launch(Dispatchers.IO) {
+            delay(1500)
+            runCatching {
+                legacyLibraryBackfillCoordinatorProvider.get().runBackfill(this@App)
+            }.onFailure {
+                Timber.tag("LegacyBackfill").w(it, "Failed to run legacy library backfill")
+            }
         }
 
         // ØªÙ‡ÙŠØ¦Ø© Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ Ø¹Ù†Ø¯ Ø§Ù„Ø¥Ù‚Ù„Ø§Ø¹

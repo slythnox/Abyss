@@ -1,4 +1,5 @@
 #!/bin/sh
+# Abyss Gradle Wrapper Script
 
 #
 # Copyright © 2015 the original authors.

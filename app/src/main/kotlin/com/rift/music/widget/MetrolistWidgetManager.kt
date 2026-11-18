@@ -468,14 +468,14 @@ class vivimusicWidgetManager @Inject constructor(
             iconDrawable.draw(canvas)
         }
 
-        // Brand title "Rift"
+        // Brand title "Abyss"
         val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
             textSize = size * 0.085f
             textAlign = Paint.Align.CENTER
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         }
-        canvas.drawText("Rift", size / 2f, size * 0.68f, textPaint)
+        canvas.drawText("Abyss", size / 2f, size * 0.68f, textPaint)
 
         // Subtitle "Tap to play"
         val subTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {

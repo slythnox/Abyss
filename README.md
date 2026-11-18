@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="assets/logo.png" width="160" alt="Rift Logo" />
+<img src="assets/banner.png" alt="Abyss Banner" width="100%" />
 
-# R I F T
+<br/>
 
 ### Precision Audio Architecture for Android
 
@@ -11,11 +11,11 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/Licence-GPL--3.0-E50914?style=for-the-badge&labelColor=0E1015" alt="Licence GPL-3.0" /></a>
-  <a href="version.properties"><img src="https://img.shields.io/badge/Version-1.0.4--XO-E50914?style=for-the-badge&labelColor=0E1015" alt="Version 1.0.4" /></a>
-  <a href="docs/BUILD_AND_TEST.md"><img src="https://img.shields.io/badge/Platform-Android%208.0%2B%20(API%2026%E2%80%9336)-E50914?style=for-the-badge&labelColor=0E1015" alt="Android 8.0+" /></a>
-  <a href="docs/ARCHITECTURE.md"><img src="https://img.shields.io/badge/Architecture-Clean%20%2F%20MVI%20%2B%20Media3-E50914?style=for-the-badge&labelColor=0E1015" alt="Architecture Clean Media3" /></a>
-  <a href="docs/PRIVACY_AND_PERMISSIONS.md"><img src="https://img.shields.io/badge/Telemetry-Zero%20Tracking-E50914?style=for-the-badge&labelColor=0E1015" alt="Zero Telemetry" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/Licence-GPL--3.0-007DFE?style=for-the-badge&labelColor=0E1015" alt="Licence GPL-3.0" /></a>
+  <a href="version.properties"><img src="https://img.shields.io/badge/Version-1.0.6-007DFE?style=for-the-badge&labelColor=0E1015" alt="Version 1.0.6" /></a>
+  <a href="docs/BUILD_AND_TEST.md"><img src="https://img.shields.io/badge/Platform-Android%208.0%2B%20(API%2026%E2%80%9336)-007DFE?style=for-the-badge&labelColor=0E1015" alt="Android 8.0+" /></a>
+  <a href="docs/ARCHITECTURE.md"><img src="https://img.shields.io/badge/Architecture-Clean%20%2F%20MVI%20%2B%20Media3-007DFE?style=for-the-badge&labelColor=0E1015" alt="Architecture Clean Media3" /></a>
+  <a href="docs/PRIVACY_AND_PERMISSIONS.md"><img src="https://img.shields.io/badge/Telemetry-Zero%20Tracking-007DFE?style=for-the-badge&labelColor=0E1015" alt="Zero Telemetry" /></a>
 </p>
 
 <p align="center">
@@ -40,21 +40,21 @@
 ---
 
 > [!IMPORTANT]
-> **Independent Open-Source Notice:** Rift is an independent, community-driven open-source software project distributed under the GNU General Public Licence v3.0. It is **not** affiliated with, sponsored by, or endorsed by Google LLC, YouTube, Spotify AB, or any past or present commercial entity associated with historic media brands. This software operates entirely client-side without proprietary backend infrastructure or commercial subscriptions.
+> **Independent Open-Source Notice:** Abyss is an independent, community-driven open-source software project distributed under the GNU General Public Licence v3.0. It is **not** affiliated with, sponsored by, or endorsed by Google LLC, YouTube, Spotify AB, or any past or present commercial entity associated with historic media brands. This software operates entirely client-side without proprietary backend infrastructure or commercial subscriptions.
 
 ---
 
 ## 1. Project Introduction
 
 ### The Rationale
-Modern mobile streaming clients increasingly prioritise algorithmic promotional feeds, tracking beacons, and walled gardens over user control, audio quality, and battery efficiency. **Rift** was engineered to return complete autonomy to the listener:
+Modern mobile streaming clients increasingly prioritise algorithmic promotional feeds, tracking beacons, and walled gardens over user control, audio quality, and battery efficiency. **Abyss** was engineered to return complete autonomy to the listener:
 - **Serverless Operation:** Runs 100% on-device. No central server stores your listening history, account identifiers, or playback queries.
 - **Resilient Media Pipeline:** Decouples playback logic from proprietary client locks by consuming open streams via a cascading, multi-client InnerTube resolver.
 - **Tactile Material 3 Interface:** Employs Jetpack Compose with custom liquid-glass backdrop shaders, adaptive palette matching, and dedicated landscape/tablet adaptations.
 - **Universal Bridge:** Enables users to import public Spotify and YouTube Music playlists directly into their local on-device database without requiring account credentials or API tokens.
 
 ### Application Identity vs Architecture Namespace
-- **User-Facing Product Name:** **Rift**
+- **User-Facing Product Name:** **Abyss** (rebranded from Abyss; originally Napster)
 - **Android Application ID:** `com.napster.music` — permanently retained across all build variants to ensure zero disruption to existing device installations, update paths, downloaded media storage directories, and app signing identity.
 - **Kotlin Package Namespace:** `com.rift.music` — all application source sets, components, ViewModels, and services are fully migrated to this modern Kotlin namespace.
 - **Room Database Schema Continuity:** Schema version 38 with full migration history (schemas 1–38) preserved in both `com.rift.music.db.InternalDatabase` and historical paths, ensuring non-destructive database opening.
@@ -94,7 +94,7 @@ Modern mobile streaming clients increasingly prioritise algorithmic promotional 
 - **Visual Canvas:** High-definition animated album canvas rendering supporting Apple Music canvas streams, Tidal canvas streams, and artist video loops.
 - **Android Auto Integration:** First-class vehicle media browsing and dashboard playback support, including cold-start playlist resumption, styled content lists, and vehicle transport controls via AndroidX Media3.
 - **Multiple Form Factors:** Dedicated responsive layouts for smartphones, tablets, foldables, and car displays with smooth 120Hz scrolling and zero-recomposition chrome animations.
-- **Interactive Widgets:** Redesigned interactive widgets including the minimalist Rift Dot Player (2×2), split-panel Rift Lyrics Player (4×2), and animated Rift Vinyl Deck (4×2).
+- **Interactive Widgets:** Redesigned interactive widgets including the minimalist Abyss Dot Player (2×2), split-panel Abyss Lyrics Player (4×2), and animated Abyss Vinyl Deck (4×2).
 - **App Usage Telemetry:** Settings > App Usage displays interactive, real-time and historical graphs for CPU load, GPU frame rendering duration, and Network data consumption rendered with smooth cubic Bézier curves and zero background tracking overhead.
 
 ### Discovery & Integrations
@@ -117,7 +117,7 @@ To maintain uncompromising privacy, codebase stability, and architecture integri
 
 ## 3. Technology Stack
 
-Rift uses modern, production-grade Android open-source technologies:
+Abyss uses modern, production-grade Android open-source technologies:
 
 | Layer | Technology | Version | Architectural Responsibility |
 |---|---|---|---|
@@ -226,7 +226,7 @@ The search architecture integrates a 300 ms debounce operator across Kotlin Flow
 `All` &bull; `Songs` &bull; `Albums` &bull; `Artists` &bull; `Playlists` &bull; `Featured Stations`
 
 ### Public Spotify Playlist Importer
-Users can paste any public Spotify playlist URL (e.g. `https://open.spotify.com/playlist/...`). Rift processes the request client-side without authenticating with Spotify:
+Users can paste any public Spotify playlist URL (e.g. `https://open.spotify.com/playlist/...`). Abyss processes the request client-side without authenticating with Spotify:
 
 ```
 [Spotify Public URL] 
@@ -242,14 +242,14 @@ Users can paste any public Spotify playlist URL (e.g. `https://open.spotify.com/
 ```
 
 ### Public YouTube Music Playlist Importer
-Users can paste any public or unlisted YouTube / YouTube Music playlist URL (or playlist ID). Rift parses the playlist ID, fetches track metadata directly via InnerTube without account credentials, and inserts the playlist and songs into the local Room database with real-time import progress.
+Users can paste any public or unlisted YouTube / YouTube Music playlist URL (or playlist ID). Abyss parses the playlist ID, fetches track metadata directly via InnerTube without account credentials, and inserts the playlist and songs into the local Room database with real-time import progress.
 
 ---
 
 ## 7. Persistence and Storage
 
 ### Room Relational Database
-Rift maintains an SQLite database (`song.db`) managed via AndroidX Room with 38 sequential migration stages. Strict schema integrity guarantees that existing user data is preserved across application updates without table drops or data loss.
+Abyss maintains an SQLite database (`song.db`) managed via AndroidX Room with 38 sequential migration stages. Strict schema integrity guarantees that existing user data is preserved across application updates without table drops or data loss.
 
 | Table Entity | Primary Role |
 |---|---|
@@ -285,7 +285,7 @@ Non-relational preferences (equaliser band gains, theme selection, dynamic colou
 
 ## 9. Privacy and Permissions
 
-Rift adheres to a strict zero-telemetry policy. The application requires only the minimal set of Android runtime permissions necessary to deliver local and streaming audio playback:
+Abyss adheres to a strict zero-telemetry policy. The application requires only the minimal set of Android runtime permissions necessary to deliver local and streaming audio playback:
 
 ```xml
 <!-- Network Communications -->
@@ -345,7 +345,7 @@ Rift adheres to a strict zero-telemetry policy. The application requires only th
 ## 11. Repository Structure
 
 ```
-Rift/
+Abyss/
 ├── app/                         # Primary Android application module
 │   ├── src/main/kotlin/com/rift/music/
 │   │   ├── app/                 # Application class & Activity lifecycle
@@ -414,7 +414,7 @@ For exhaustive technical references, inspect the comprehensive engineering docum
 ## 14. Licensing and Provenance
 
 ### Software Licence
-Rift is licensed under the **GNU General Public Licence v3.0 (GPL-3.0)**. Permissions of this strong copyleft licence are conditioned on making available complete source code of licensed works and modifications under the same licence. See the [`LICENSE`](LICENSE) file for the full legal text.
+Abyss is licensed under the **GNU General Public Licence v3.0 (GPL-3.0)**. Permissions of this strong copyleft licence are conditioned on making available complete source code of licensed works and modifications under the same licence. See the [`LICENSE`](LICENSE) file for the full legal text.
 
 ### Upstream Open-Source Lineage
 This application represents an evolution of open-source music playback on Android, built upon foundational reverse-engineering and local-first media playback architecture under GPL-3.0.

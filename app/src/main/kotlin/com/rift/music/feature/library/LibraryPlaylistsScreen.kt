@@ -288,12 +288,12 @@ fun LibraryPlaylistsScreen(
                 modifier = Modifier
                     .size(38.dp)
                     .background(Color(0xFF2E1216), CircleShape)
-                    .border(1.dp, Color(0xFFF20329).copy(alpha = 0.55f), CircleShape)
+                    .border(1.dp, Color(0xFF007DFE).copy(alpha = 0.55f), CircleShape)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.add),
                     contentDescription = stringResource(R.string.create_playlist),
-                    tint = Color(0xFFFF4D68),
+                    tint = Color(0xFF5B9DFF),
                     modifier = Modifier.size(20.dp)
                 )
             }

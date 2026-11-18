@@ -77,7 +77,7 @@ fun PlaybackError(
     // report is diagnosable without a follow-up round trip.
     val copyDetails = remember(error, rawErrorMessage) {
         buildString {
-            appendLine("Rift playback error")
+            appendLine("Abyss playback error")
             appendLine("code: ${getErrorCodeName(error.errorCode)} (${error.errorCode})")
             httpStatus?.let { appendLine("http: $it") }
             appendLine("detail: $rawErrorMessage")

@@ -183,7 +183,7 @@ fun ConclusionPage(onClose: () -> Unit) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "RIFT ${WrappedConstants.YEAR} RECAP",
+                                text = "Abyss ${WrappedConstants.YEAR} RECAP",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF6C5CE7),

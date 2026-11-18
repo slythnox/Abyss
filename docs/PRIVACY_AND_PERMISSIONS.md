@@ -1,12 +1,12 @@
 # Privacy, Network Flows and Android Permissions
 
-This document provides a source-verified overview of how Rift handles local data storage, network traffic, third-party services, and Android device permissions.
+This document provides a source-verified overview of how Abyss handles local data storage, network traffic, third-party services, and Android device permissions.
 
 ---
 
 ## 1. Zero Telemetry and Privacy Commitments
 
-- **Zero Analytics SDKs:** Rift does not integrate Google Analytics, Firebase Analytics, Crashlytics, Mixpanel, Segment, or any other tracking framework.
+- **Zero Analytics SDKs:** Abyss does not integrate Google Analytics, Firebase Analytics, Crashlytics, Mixpanel, Segment, or any other tracking framework.
 - **Zero Advertising Trackers:** The application contains no advertising libraries, user-tracking beacons, or behavioural profiling daemons.
 - **Device-Bound Diagnostics:** Crash traces and logcat outputs remain strictly within the user's private device storage and are never dispatched to external servers automatically.
 

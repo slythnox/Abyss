@@ -2,9 +2,9 @@
 
 ## Overview
 
-Napster (now Rift) is an Android music player built with Jetpack Compose, Media3/ExoPlayer, AndroidX Room, AndroidX DataStore, and Dagger Hilt. It connects to YouTube Music via the unofficial InnerTube API and optionally integrates with Last.fm, ListenBrainz, Spotify (public playlists only), and several canvas and lyrics providers.
+Napster (now Abyss) is an Android music player built with Jetpack Compose, Media3/ExoPlayer, AndroidX Room, AndroidX DataStore, and Dagger Hilt. It connects to YouTube Music via the unofficial InnerTube API and optionally integrates with Last.fm, ListenBrainz, Spotify (public playlists only), and several canvas and lyrics providers.
 
-- **Product Name:** Rift
+- **Product Name:** Abyss
 - **Application ID:** `com.napster.music` — permanently retained across all build variants to preserve device installation identity, Room database paths, and offline media storage.
 - **Internal Kotlin namespace:** `com.rift.music` — migrated across all source sets, activities, services, receivers, and Hilt modules.
 - **Gradle root project name:** `napster`

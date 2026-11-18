@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         ### 💡 Feature Proposal
-        Help us make Napster even better.
+        Help us make Abyss even better.
 
   - type: dropdown
     id: category

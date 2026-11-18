@@ -30,9 +30,11 @@ import com.rift.music.db.entities.Event
 import com.rift.music.db.entities.FormatEntity
 import com.rift.music.db.entities.LyricsEntity
 import com.rift.music.db.entities.PlayCountEntity
+import com.rift.music.db.entities.PlaybackStreamCacheEntity
 import com.rift.music.db.entities.PlaylistEntity
 import com.rift.music.db.entities.PlaylistSongMap
 import com.rift.music.db.entities.PlaylistSongMapPreview
+import com.rift.music.db.entities.ProviderMappingEntity
 import com.rift.music.db.entities.RecognitionHistory
 import com.rift.music.db.entities.RelatedSongMap
 import com.rift.music.db.entities.SearchHistory
@@ -113,13 +115,15 @@ class MusicDatabase(
         SpeedDialItem::class,
         SongAnalysisEntity::class,
         DislikedSongEntity::class,
+        ProviderMappingEntity::class,
+        PlaybackStreamCacheEntity::class,
     ],
     views = [
         SortedSongArtistMap::class,
         SortedSongAlbumMap::class,
         PlaylistSongMapPreview::class,
     ],
-    version = 38,
+    version = 39,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 2, to = 3),
@@ -157,6 +161,7 @@ class MusicDatabase(
         AutoMigration(from = 34, to = 35),
         AutoMigration(from = 36, to = 37),
         AutoMigration(from = 37, to = 38),
+        AutoMigration(from = 38, to = 39),
     ],
 )
 @TypeConverters(Converters::class)
@@ -178,6 +183,7 @@ abstract class InternalDatabase : RoomDatabase() {
                         MIGRATION_22_24,
                         MIGRATION_24_25,
                         MIGRATION_35_36,
+                        MIGRATION_38_39,
                     )
                     .fallbackToDestructiveMigration(dropAllTables = true)
                     .setJournalMode(RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
@@ -734,4 +740,83 @@ class Migration29To30 : AutoMigrationSpec {
         }
     }
 }
+
+val MIGRATION_38_39 =
+    object : Migration(38, 39) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            fun hasColumn(table: String, column: String): Boolean {
+                db.query("PRAGMA table_info('$table')".toSQLiteQuery()).use { cursor ->
+                    val nameIdx = cursor.getColumnIndex("name")
+                    while (cursor.moveToNext()) {
+                        if (nameIdx >= 0 && cursor.getString(nameIdx) == column) return true
+                    }
+                }
+                return false
+            }
+
+            if (!hasColumn("song", "sourceId")) {
+                db.execSQL("ALTER TABLE song ADD COLUMN sourceId TEXT DEFAULT NULL")
+            }
+            if (!hasColumn("song", "sourceProvider")) {
+                db.execSQL("ALTER TABLE song ADD COLUMN sourceProvider TEXT DEFAULT NULL")
+            }
+            if (!hasColumn("song", "matchedVideoId")) {
+                db.execSQL("ALTER TABLE song ADD COLUMN matchedVideoId TEXT DEFAULT NULL")
+            }
+            if (!hasColumn("song", "matchConfidence")) {
+                db.execSQL("ALTER TABLE song ADD COLUMN matchConfidence REAL DEFAULT NULL")
+            }
+            if (!hasColumn("song", "matchStatus")) {
+                db.execSQL("ALTER TABLE song ADD COLUMN matchStatus TEXT DEFAULT NULL")
+            }
+            if (!hasColumn("song", "metadataLastUpdated")) {
+                db.execSQL("ALTER TABLE song ADD COLUMN metadataLastUpdated INTEGER DEFAULT NULL")
+            }
+            if (!hasColumn("song", "isEnriched")) {
+                db.execSQL("ALTER TABLE song ADD COLUMN isEnriched INTEGER NOT NULL DEFAULT 0")
+            }
+
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `provider_mapping` (
+                    `sourceId` TEXT NOT NULL,
+                    `sourceProvider` TEXT NOT NULL,
+                    `providerTrackId` TEXT NOT NULL,
+                    `provider` TEXT NOT NULL,
+                    `confidence` REAL NOT NULL,
+                    `matchStatus` TEXT NOT NULL,
+                    `verifiedAt` INTEGER NOT NULL,
+                    `invalidationReason` TEXT,
+                    PRIMARY KEY(`sourceId`)
+                )
+                """.trimIndent()
+            )
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_provider_mapping_providerTrackId` ON `provider_mapping` (`providerTrackId`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_provider_mapping_sourceProvider_provider` ON `provider_mapping` (`sourceProvider`, `provider`)")
+
+            db.execSQL(
+                """
+                CREATE TABLE IF NOT EXISTS `playback_stream_cache` (
+                    `cacheKey` TEXT NOT NULL,
+                    `trackId` TEXT NOT NULL,
+                    `provider` TEXT NOT NULL,
+                    `quality` TEXT NOT NULL,
+                    `streamUrl` TEXT NOT NULL,
+                    `expiresAtMs` INTEGER NOT NULL,
+                    `resolvedAtMs` INTEGER NOT NULL,
+                    `formatMimeType` TEXT,
+                    `bitrate` INTEGER NOT NULL,
+                    `sampleRate` INTEGER,
+                    `contentLength` INTEGER NOT NULL,
+                    `isValid` INTEGER NOT NULL DEFAULT 1,
+                    PRIMARY KEY(`cacheKey`)
+                )
+                """.trimIndent()
+            )
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_playback_stream_cache_trackId` ON `playback_stream_cache` (`trackId`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_playback_stream_cache_expiresAtMs` ON `playback_stream_cache` (`expiresAtMs`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_playback_stream_cache_isValid` ON `playback_stream_cache` (`isValid`)")
+        }
+    }
+
 

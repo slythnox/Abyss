@@ -110,9 +110,9 @@ class WrappedManager(
         withContext(Dispatchers.IO) {
             val playlistMap = mutableMapOf<WrappedScreenType, String>()
 
-            // Intro Part: Random song from top 6-30
-            val introSongPool = topSongs.subList(5, topSongs.size)
-            val introSong = introSongPool.randomOrNull()?.id ?: topSongs.last().id
+            // Intro Part: Random song from top 6-30, or fallback to any available song
+            val introSongPool = if (topSongs.size > 5) topSongs.subList(5, topSongs.size) else topSongs
+            val introSong = introSongPool.randomOrNull()?.id ?: topSongs.lastOrNull()?.id ?: topSongs.first().id
             playlistMap[WrappedScreenType.Welcome] = introSong
             playlistMap[WrappedScreenType.MinutesTease] = introSong
             playlistMap[WrappedScreenType.MinutesReveal] = introSong
@@ -168,9 +168,15 @@ class WrappedManager(
             playlistMap[WrappedScreenType.TopArtistReveal] = artistSong
             playlistMap[WrappedScreenType.Top5Artists] = artistSong
 
-            // End Part
-            val endSongPool = topSongs.subList(2, 5)
-            val endSong = endSongPool.randomOrNull()?.id ?: topSongs[2].id
+            // End Part: Songs 3 to 5 (indices 2 to 5), or whatever is available
+            val endSongPool = if (topSongs.size >= 5) {
+                topSongs.subList(2, 5)
+            } else if (topSongs.size > 2) {
+                topSongs.subList(2, topSongs.size)
+            } else {
+                topSongs
+            }
+            val endSong = endSongPool.randomOrNull()?.id ?: topSongs.getOrNull(2)?.id ?: topSong.id
             playlistMap[WrappedScreenType.Playlist] = endSong
             playlistMap[WrappedScreenType.Conclusion] = "2-p9DM2Xvsc"
 
@@ -234,8 +240,8 @@ class WrappedManager(
                 30 -> "Monthly Wrapped"
                 60 -> "Past 2 Months"
                 90 -> "Past 3 Months"
-                365 -> "Rift ${WrappedConstants.YEAR}"
-                else -> "Rift ${WrappedConstants.YEAR}"
+                365 -> "Abyss ${WrappedConstants.YEAR}"
+                else -> "Abyss ${WrappedConstants.YEAR}"
             }
 
             _state.update {

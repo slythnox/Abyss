@@ -142,8 +142,8 @@ The repository includes GitHub Actions workflows:
 
 | Workflow | File | Trigger | Artifact |
 |---|---|---|---|
-| Nightly build | `.github/workflows/nightly.yml` | Manual / scheduled | `rift-gms-nightly` |
-| Release build | `.github/workflows/release.yml` | On published release | `rift-gms-release` |
+| Nightly build | `.github/workflows/nightly.yml` | Manual / scheduled | `abyss-gms-nightly` |
+| Release build | `.github/workflows/release.yml` | On published release | `abyss-gms-release` |
 
 Nightly builds accept a `-Pnightly=true` Gradle property that appends the run number to the version name.
 
@@ -151,7 +151,7 @@ Nightly builds accept a `-Pnightly=true` Gradle property that appends the run nu
 
 ## Room Schema
 
-Room schema exports are stored in `app/schemas/com.rift.music.db.InternalDatabase/` (with historical schemas also preserved in `app/schemas/com.beatwave.music.db.InternalDatabase/`). The current schema version is **38**. When adding a Room entity or column, increment the version, add a migration in `InternalDatabase.kt`, and export the schema by running the build (or the `generateRoomSchemas` task if configured). Never modify existing migration files.
+Room schema exports are stored in `app/schemas/com.rift.music.db.InternalDatabase/` (with historical schemas also preserved in `app/schemas/com.beatwave.music.db.InternalDatabase/`). The current schema version is **39**. When adding a Room entity or column, increment the version, add a migration in `InternalDatabase.kt`, and export the schema by running the build (or the `generateRoomSchemas` task if configured). Never modify existing migration files.
 
 ---
 

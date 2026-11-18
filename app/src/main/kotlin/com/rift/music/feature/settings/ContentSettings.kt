@@ -1288,7 +1288,7 @@ fun ContentSettings(
         val currentIntervalText = intervalOptions.find { it.first == wrappedIntervalDays }?.second ?: "$wrappedIntervalDays Days"
 
         Material3SettingsGroup(
-            title = "Rift Wrapped",
+            title = "Abyss Wrapped",
             items = listOf(
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.trending_up),

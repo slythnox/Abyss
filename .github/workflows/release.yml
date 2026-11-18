@@ -77,14 +77,14 @@ jobs:
           if [ -z "$TAG" ]; then TAG="v1.0.0"; fi
           mkdir -p release-apk
           ORIGINAL_APK=$(find app/build/outputs/apk/universalGms/release/ -name "*.apk" | head -n 1)
-          cp "$ORIGINAL_APK" "release-apk/Napster-${TAG}.apk"
-          echo "Successfully created release-apk/Napster-${TAG}.apk"
+          cp "$ORIGINAL_APK" "release-apk/Abyss-${TAG}.apk"
+          echo "Successfully created release-apk/Abyss-${TAG}.apk"
           ls -la release-apk/
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Napster-Release-APK
+          name: Abyss-Release-APK
           path: release-apk/*.apk
 
       - name: Create GitHub Release
@@ -92,7 +92,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') || inputs.tag != ''
         with:
           tag_name: ${{ github.ref_name || inputs.tag }}
-          name: Napster ${{ github.ref_name || inputs.tag }}
+          name: Abyss ${{ github.ref_name || inputs.tag }}
           files: release-apk/*.apk
           draft: false
           prerelease: false

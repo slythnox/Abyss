@@ -5,6 +5,9 @@
 
 package com.rift.music.feature.wrapped
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -92,6 +95,15 @@ sealed class WrappedScreenType {
     object Conclusion : WrappedScreenType()
 }
 
+private fun Context.findActivity(): Activity? {
+    var current: Context? = this
+    while (current is ContextWrapper) {
+        if (current is Activity) return current
+        current = current.baseContext
+    }
+    return null
+}
+
 @Composable
 fun WrappedScreen(navController: NavController) {
     val context = LocalContext.current
@@ -128,9 +140,10 @@ fun WrappedScreenContent(navController: NavController) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(Unit) {
-        val window = (view.context as android.app.Activity).window
-        val insetsController = WindowCompat.getInsetsController(window, view)
-        insetsController.hide(WindowInsetsCompat.Type.systemBars())
+        val activity = view.context.findActivity()
+        val window = activity?.window
+        val insetsController = window?.let { WindowCompat.getInsetsController(it, view) }
+        insetsController?.hide(WindowInsetsCompat.Type.systemBars())
 
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -142,7 +155,7 @@ fun WrappedScreenContent(navController: NavController) {
         lifecycleOwner.lifecycle.addObserver(observer)
 
         onDispose {
-            insetsController.show(WindowInsetsCompat.Type.systemBars())
+            insetsController?.show(WindowInsetsCompat.Type.systemBars())
             lifecycleOwner.lifecycle.removeObserver(observer)
             audioService.release()
         }
@@ -221,7 +234,7 @@ fun WrappedScreenContent(navController: NavController) {
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Rift Wrapped ${WrappedConstants.YEAR}",
+                            text = "Abyss Wrapped ${WrappedConstants.YEAR}",
                             style = TextStyle(
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,

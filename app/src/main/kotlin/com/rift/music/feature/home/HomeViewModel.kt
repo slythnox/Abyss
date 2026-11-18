@@ -301,6 +301,8 @@ class HomeViewModel @Inject constructor(
         try {
             isRandomizing.value = true
             withContext(Dispatchers.IO) {
+                Timber.tag("HomeViewModel").d("playRandomDiscovery started")
+
                 // 1. Fetch recent listening history to select a random familiar track
                 val recentEvents = try {
                     database.recentEvents(100).first()
@@ -320,44 +322,126 @@ class HomeViewModel @Inject constructor(
                     else database.songsByCreateDateAsc().firstOrNull()?.shuffled()?.firstOrNull()
                 }
 
-                if (seedSong == null) {
-                    val fallbackItem = getRandomItem()
-                    if (fallbackItem is SongItem) {
-                        withContext(Dispatchers.Main) {
-                            playerConnection.playQueue(
-                                YouTubeQueue(
-                                    fallbackItem.endpoint ?: WatchEndpoint(videoId = fallbackItem.id),
-                                    fallbackItem.toMediaMetadata()
-                                )
-                            )
-                        }
+                if (seedSong != null) {
+                    // 3. Exclude overplayed tracks (user's top 30 most played and recent 50 history)
+                    val mostPlayed = try {
+                        database.mostPlayedSongs(0L).first().take(30).map { it.id }.toSet()
+                    } catch (_: Exception) {
+                        emptySet()
+                    }
+                    val recentHistoryIds = recentEvents.take(50).mapNotNull { it.song?.id }.toSet()
+                    val disliked = try {
+                        database.getDislikedSongs().map { it.id }.toSet()
+                    } catch (_: Exception) {
+                        emptySet()
+                    }
+                    val overplayedIds = (mostPlayed + recentHistoryIds + disliked) - seedSong.id
+
+                    // 4. Construct and play the intelligent RandomDiscoveryQueue
+                    val discoveryQueue = RandomDiscoveryQueue(
+                        seedSong = seedSong,
+                        overplayedSongIds = overplayedIds,
+                        database = database,
+                    )
+
+                    withContext(Dispatchers.Main) {
+                        playerConnection.playQueue(discoveryQueue)
                     }
                     return@withContext
                 }
 
-                // 3. Exclude overplayed tracks (user's top 30 most played and recent 50 history)
-                val mostPlayed = try {
-                    database.mostPlayedSongs(0L).first().take(30).map { it.id }.toSet()
-                } catch (_: Exception) {
-                    emptySet()
-                }
-                val recentHistoryIds = recentEvents.take(50).mapNotNull { it.song?.id }.toSet()
-                val disliked = try {
-                    database.getDislikedSongs().map { it.id }.toSet()
-                } catch (_: Exception) {
-                    emptySet()
-                }
-                val overplayedIds = (mostPlayed + recentHistoryIds + disliked) - seedSong.id
+                // If user has no local history / seed song, pick from online sources:
+                Timber.tag("HomeViewModel").d("No local seed song, resolving from online sources")
 
-                // 4. Construct and play the intelligent RandomDiscoveryQueue
-                val discoveryQueue = RandomDiscoveryQueue(
-                    seedSong = seedSong,
-                    overplayedSongIds = overplayedIds,
-                    database = database,
-                )
+                // A. Check quick picks
+                val qpSong = quickPicks.value?.shuffled()?.firstOrNull()
+                if (qpSong != null) {
+                    withContext(Dispatchers.Main) {
+                        playerConnection.playQueue(
+                            YouTubeQueue(
+                                WatchEndpoint(videoId = qpSong.id),
+                                qpSong.toMediaMetadata()
+                            )
+                        )
+                    }
+                    return@withContext
+                }
 
-                withContext(Dispatchers.Main) {
-                    playerConnection.playQueue(discoveryQueue)
+                // B. Check all sections on Home for any SongItem
+                val homeSongItems = homePage.value?.sections
+                    ?.flatMap { it.items }
+                    ?.filterIsInstance<SongItem>()
+                    .orEmpty()
+                if (homeSongItems.isNotEmpty()) {
+                    val randomSong = homeSongItems.shuffled().first()
+                    withContext(Dispatchers.Main) {
+                        playerConnection.playQueue(
+                            YouTubeQueue(
+                                randomSong.endpoint ?: WatchEndpoint(videoId = randomSong.id),
+                                randomSong.toMediaMetadata()
+                            )
+                        )
+                    }
+                    return@withContext
+                }
+
+                // C. Check album items on Home: load album songs and pick one
+                val homeAlbumItems = homePage.value?.sections
+                    ?.flatMap { it.items }
+                    ?.filterIsInstance<AlbumItem>()
+                    .orEmpty()
+                if (homeAlbumItems.isNotEmpty()) {
+                    val randomAlbum = homeAlbumItems.shuffled().first()
+                    val albumResult = YouTube.album(randomAlbum.browseId).getOrNull()
+                    val albumSong = albumResult?.songs?.shuffled()?.firstOrNull()
+                    if (albumSong != null) {
+                        withContext(Dispatchers.Main) {
+                            playerConnection.playQueue(
+                                YouTubeQueue(
+                                    albumSong.endpoint ?: WatchEndpoint(videoId = albumSong.id),
+                                    albumSong.toMediaMetadata()
+                                )
+                            )
+                        }
+                        return@withContext
+                    }
+                }
+
+                // D. Check playlist items on Home: load playlist songs and pick one
+                val homePlaylistItems = homePage.value?.sections
+                    ?.flatMap { it.items }
+                    ?.filterIsInstance<PlaylistItem>()
+                    .orEmpty()
+                if (homePlaylistItems.isNotEmpty()) {
+                    val randomPlaylist = homePlaylistItems.shuffled().first()
+                    val playlistResult = YouTube.playlist(randomPlaylist.id).getOrNull()
+                    val playlistSong = playlistResult?.songs?.shuffled()?.firstOrNull()
+                    if (playlistSong != null) {
+                        withContext(Dispatchers.Main) {
+                            playerConnection.playQueue(
+                                YouTubeQueue(
+                                    playlistSong.endpoint ?: WatchEndpoint(videoId = playlistSong.id),
+                                    playlistSong.toMediaMetadata()
+                                )
+                            )
+                        }
+                        return@withContext
+                    }
+                }
+
+                // E. Final fallback: search trending songs
+                val searchResult = YouTube.search("Trending", YouTube.SearchFilter.FILTER_SONG).getOrNull()
+                val searchSong = searchResult?.items?.filterIsInstance<SongItem>()?.shuffled()?.firstOrNull()
+                if (searchSong != null) {
+                    withContext(Dispatchers.Main) {
+                        playerConnection.playQueue(
+                            YouTubeQueue(
+                                searchSong.endpoint ?: WatchEndpoint(videoId = searchSong.id),
+                                searchSong.toMediaMetadata()
+                            )
+                        )
+                    }
+                    return@withContext
                 }
             }
         } catch (e: Exception) {

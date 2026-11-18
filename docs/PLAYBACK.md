@@ -1,6 +1,6 @@
 # Playback Engine and Media Architecture
 
-This document describes the media playback architecture, service lifecycle, queue coordination, caching mechanisms, and stream resolution pipeline in Rift.
+This document describes the media playback architecture, service lifecycle, queue coordination, caching mechanisms, and stream resolution pipeline in Abyss.
 
 ---
 
@@ -63,11 +63,17 @@ flowchart TD
 When a track is prepared for playback:
 
 1. **Local Disk Cache Inspection:** The player checks whether complete or partial media chunks exist in the offline ExoPlayer simple cache directory.
-2. **External Provider Resolution (`ExternalStreamProviderResolver.kt`):**
+2. **Persistent Stream Cache Inspection (`PlaybackStreamCacheRepository.kt`):**
+   - Stream URLs are checked against an L1 memory cache and L2 Room database table (`playback_stream_cache`).
+   - Valid entries with more than 10 minutes before expiration (`SAFETY_MARGIN_MS = 600_000L`) are reused instantly without network resolution.
+   - Any HTTP 403, 404, or 416 error immediately invalidates the stream cache entry for the offending track.
+3. **Single-Flight Coalescing (`ResolutionDeduplicator.kt`):**
+   - Concurrent resolution requests for the same media key (e.g. from user playback and prefetcher) are coalesced into a single in-flight resolution to eliminate redundant network load.
+4. **External Provider Resolution (`ExternalStreamProviderResolver.kt`):**
    - **HTTP Streaming Add-ons:** If configured, modular add-on sources are queried first via `AddonSource`. Manifest caching, in-flight deduplication (`SharedCalls`), and rate-limit backoff protect external endpoints. If the candidate track supplies a direct `streamURL`, it is dispatched immediately. `TrackMatcher` validates duration and title, rejecting remixes or live versions to prevent silent track mismatches.
    - **External Hi-Fi Sources:** If enabled by explicit user opt-in (`EnableSpineKey`, `EnableTidalStreamingKey`, `EnableJioSaavnKey`), secondary stream providers (Spine, Tidal, JioSaavn) are evaluated in sequence.
    - **Scoped Metadata Fetching:** YouTube metadata queries (`YouTube.next(videoId)`) are performed via a scoped lazy provider (`getYtMetadata()`). The first external provider triggers the lookup; subsequent fallback providers reuse the cached title, artist, and duration instantly in 0 ms.
-3. **Primary YouTube Resolution (`YTPlayerUtils.kt`):**
+5. **Primary YouTube Resolution (`YTPlayerUtils.kt`):**
    - Direct streaming URLs are resolved from YouTube Music via InnerTube endpoints, selecting optimal audio streams (WebM/Opus or M4A/AAC).
    - **Progressive Format Fallback:** If `adaptiveFormats` has no pure audio streams, the resolver falls back to progressive `formats` or any format containing audio.
    - **Client-Matched GET Probe Validation:** Stream URLs are validated via a lightweight HTTP `GET` probe with `Range: bytes=0-1` using the client's matching User-Agent. Both 200 OK and 206 Partial Content are treated as verified successes. Probe timeouts are handled non-fatally to avoid falsely discarding working streams.
@@ -78,7 +84,7 @@ When a track is prepared for playback:
 
 ## 4. Playback Diagnostics and Structured Error Reporting
 
-Rift incorporates structured error diagnostics in `PlaybackDiagnostics` and `PlaybackErrorInfo`:
+Abyss incorporates structured error diagnostics in `PlaybackDiagnostics` and `PlaybackErrorInfo`:
 - **Structured Error Payload:** Captures track ID (`mediaId`), provider, playback stage (`AUDIO_DECODER`, `STREAM_EXPIRED`, `HTTP_RANGE`, `PARSING`, `NETWORK`, `HTTP_TRANSFER`, `FINAL_RECOVERY`), Media3 error code, HTTP status, exception type, retry count, fallback attempt status, recovery outcome (`RETRYING`, `SKIPPED_NEXT`, `FAILED_STOPPED`), and a user-friendly message.
 - **UI Error Visibility:** Errors are exposed via `PlayerConnection.playbackError` StateFlow and rendered to the user via Snackbar prompts, preventing silent failures.
 - **Stable UI on Error:** Fatal playback stops retain `currentMediaMetadata` rather than wiping it to `null`, ensuring the player bar remains visible in a stopped state with diagnostic feedback instead of disappearing.
@@ -90,7 +96,7 @@ Rift incorporates structured error diagnostics in `PlaybackDiagnostics` and `Pla
 
 ## 4. Audio Diagnostics and Hardware Route Telemetry
 
-Rift incorporates a truth-first telemetry pipeline providing complete transparency into the audio rendering pipeline:
+Abyss incorporates a truth-first telemetry pipeline providing complete transparency into the audio rendering pipeline:
 
 ```
 Media3 Decoder Format (AnalyticsListener)
@@ -167,7 +173,7 @@ The queue screen (`Queue.kt`) supports direct long-press drag-and-drop reorderin
 ### Media3 Shuffle-Aware Timeline Coordination
 Reordering behaves correctly across both playback modes:
 - **Linear / Unshuffled Mode:** Moving an item executes `player.moveMediaItem(fromIndex, toIndex)` directly on the Media3 timeline. Active playback continues without interruption, rebuffering, or restart. If the currently playing item is moved, `player.currentMediaItemIndex` updates automatically while playback continues.
-- **Shuffle Mode (`DefaultShuffleOrder`):** In shuffle mode, modifying the underlying timeline windows would disrupt the shuffled playback sequence. Instead, Rift calculates the new permutation and invokes `player.setShuffleOrder(newShuffleOrder)`. The displayed queue and subsequent playback transitions match the user's dragged order, while existing playback continues seamlessly.
+- **Shuffle Mode (`DefaultShuffleOrder`):** In shuffle mode, modifying the underlying timeline windows would disrupt the shuffled playback sequence. Instead, Abyss calculates the new permutation and invokes `player.setShuffleOrder(newShuffleOrder)`. The displayed queue and subsequent playback transitions match the user's dragged order, while existing playback continues seamlessly.
 - **Duplicate Track Support:** Media items in the queue are keyed using distinct timeline window indices, allowing identical tracks with the same `mediaId` to be reordered independently without key collision.
 
 ---
@@ -201,7 +207,7 @@ Incoming recommendation candidates pass through a deterministic multi-stage filt
 
 ## 10. Persistent Disliked Songs (`DislikeManager.kt`)
 
-Rift provides a first-class dislike mechanism for user preference tuning:
+Abyss provides a first-class dislike mechanism for user preference tuning:
 - **Unified Menu Parity:** The "Dislike song" / "Remove dislike" action is available directly in both the Player screen's three-dot menu and the Queue item menu with consistent reactive state, icon cues, and toast feedback.
 - **Behavior:** Immediately skips the playing track, excludes it from upcoming recommendations, and persists the track into Room schema version 38 (`disliked_song` table).
 - **Cross-Provider Matcher:** Stores both exact IDs and normalized tokens (`cleanTitle`, `primaryArtist`) to block identical songs even if recommended under a different YouTube upload ID or provider.
@@ -233,7 +239,7 @@ In AndroidX Media3, player.isPlaying evaluates to 	rue strictly when playbackSta
 
 ## 12. Project ASI 1.0 — Adaptive Session Intelligence (Feedback & Taste Engine)
 
-Rift incorporates **Project ASI 1.0 (Adaptive Session Intelligence)** to provide context-aware, locally-learned listening feedback and session tracking without external telemetry or heavy ML dependencies.
+Abyss incorporates **Project ASI 1.0 (Adaptive Session Intelligence)** to provide context-aware, locally-learned listening feedback and session tracking without external telemetry or heavy ML dependencies.
 
 ### Centralized Feedback Classification (`ASIFeedbackCollector.kt`)
 To avoid fragile timing heuristics or assuming intent from Media3 transition codes alone, ASI instruments explicit user command pathways across UI, MediaSession controllers, Notifications, and Bluetooth AVRCP (`CommandOriginRegistry.kt`):

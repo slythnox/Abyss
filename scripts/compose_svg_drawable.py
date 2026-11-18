@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Abyss Vector Drawable Generator"""
 import argparse
 import gzip
 import logging

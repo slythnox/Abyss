@@ -1,3 +1,8 @@
+/**
+ * Abyss (C) 2026
+ * Licensed under GPL-3.0 | See git history for contributors
+ */
+
 plugins {
     alias(libs.plugins.hilt) apply (false)
     alias(libs.plugins.kotlin.ksp) apply (false)

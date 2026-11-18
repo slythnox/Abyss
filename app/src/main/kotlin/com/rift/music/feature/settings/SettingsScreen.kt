@@ -105,11 +105,11 @@ fun SettingsScreen(
                 singleLine = true,
                 shape = RoundedCornerShape(24.dp),
                 colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFF20329),
+                    focusedBorderColor = Color(0xFF007DFE),
                     unfocusedBorderColor = Color(0xFF252932),
-                    focusedLeadingIconColor = Color(0xFFFF4D68),
+                    focusedLeadingIconColor = Color(0xFF5B9DFF),
                     unfocusedLeadingIconColor = Color(0xFF9EACB9),
-                    cursorColor = Color(0xFFF20329),
+                    cursorColor = Color(0xFF007DFE),
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -327,7 +327,7 @@ private fun SettingsSectionHeader(title: String) {
         style = MaterialTheme.typography.labelLarge.copy(
             fontWeight = FontWeight.SemiBold,
         ),
-        color = Color(0xFFFF4D68),
+        color = Color(0xFF5B9DFF),
         modifier = Modifier.padding(
             start = 20.dp,
             top = 8.dp,

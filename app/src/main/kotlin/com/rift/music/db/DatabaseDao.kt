@@ -38,10 +38,12 @@ import com.rift.music.db.entities.EventWithSong
 import com.rift.music.db.entities.FormatEntity
 import com.rift.music.db.entities.LyricsEntity
 import com.rift.music.db.entities.PlayCountEntity
+import com.rift.music.db.entities.PlaybackStreamCacheEntity
 import com.rift.music.db.entities.Playlist
 import com.rift.music.db.entities.PlaylistEntity
 import com.rift.music.db.entities.PlaylistSong
 import com.rift.music.db.entities.PlaylistSongMap
+import com.rift.music.db.entities.ProviderMappingEntity
 import com.rift.music.db.entities.RecognitionHistory
 import com.rift.music.db.entities.RelatedSongMap
 import com.rift.music.db.entities.SearchHistory
@@ -2067,4 +2069,74 @@ interface DatabaseDao {
 
     @Query("SELECT DISTINCT songId FROM event ORDER BY rowId DESC LIMIT :limit")
     fun getRecentEventSongIds(limit: Int): List<String>
+
+    // Provider Mappings
+    @Upsert
+    fun insert(mapping: ProviderMappingEntity)
+
+    @Upsert
+    fun insertProviderMappings(mappings: List<ProviderMappingEntity>)
+
+    @Query("SELECT * FROM provider_mapping WHERE sourceId = :sourceId LIMIT 1")
+    fun getProviderMapping(sourceId: String): ProviderMappingEntity?
+
+    @Query("SELECT * FROM provider_mapping WHERE sourceId = :sourceId AND provider = :provider LIMIT 1")
+    fun getProviderMapping(sourceId: String, provider: String): ProviderMappingEntity?
+
+    @Query("SELECT * FROM provider_mapping WHERE providerTrackId = :providerTrackId LIMIT 1")
+    fun getProviderMappingByTarget(providerTrackId: String): ProviderMappingEntity?
+
+    @Query("UPDATE provider_mapping SET matchStatus = :status, invalidationReason = :reason WHERE sourceId = :sourceId")
+    fun invalidateProviderMapping(sourceId: String, status: String = "FAILED", reason: String? = null)
+
+    // Playback Stream Cache
+    @Upsert
+    fun insert(streamCache: PlaybackStreamCacheEntity)
+
+    @Upsert
+    fun insertStreamCaches(caches: List<PlaybackStreamCacheEntity>)
+
+    @Query("SELECT * FROM playback_stream_cache WHERE cacheKey = :cacheKey AND isValid = 1 AND expiresAtMs > :currentTime LIMIT 1")
+    fun getValidStreamCache(cacheKey: String, currentTime: Long = System.currentTimeMillis()): PlaybackStreamCacheEntity?
+
+    @Query("SELECT * FROM playback_stream_cache WHERE trackId = :trackId AND isValid = 1 AND expiresAtMs > :currentTime ORDER BY resolvedAtMs DESC LIMIT 1")
+    fun getValidStreamCacheForTrack(trackId: String, currentTime: Long = System.currentTimeMillis()): PlaybackStreamCacheEntity?
+
+    @Query("UPDATE playback_stream_cache SET isValid = 0 WHERE cacheKey = :cacheKey")
+    fun invalidateStreamCache(cacheKey: String)
+
+    @Query("UPDATE playback_stream_cache SET isValid = 0 WHERE trackId = :trackId")
+    fun invalidateStreamCacheForTrack(trackId: String)
+
+    @Query("DELETE FROM playback_stream_cache WHERE expiresAtMs <= :currentTime OR isValid = 0")
+    fun cleanupExpiredStreamCaches(currentTime: Long = System.currentTimeMillis()): Int
+
+    // Playlist Intelligence & Enrichment Queries
+    @Transaction
+    @Query("SELECT song.* FROM playlist_song_map JOIN song ON playlist_song_map.songId = song.id WHERE playlistId = :playlistId AND (song.matchedVideoId IS NULL OR song.matchedVideoId = '' OR song.isEnriched = 0) ORDER BY position LIMIT :limit")
+    fun getUnresolvedSongsForPlaylist(playlistId: String, limit: Int): List<Song>
+
+    @Transaction
+    @Query("SELECT * FROM song WHERE sourceId = :sourceId LIMIT 1")
+    suspend fun getSongBySourceId(sourceId: String): Song?
+
+    @Transaction
+    @Query("SELECT * FROM song WHERE sourceId = :sourceId LIMIT 1")
+    fun getSongBySourceIdBlocking(sourceId: String): Song?
+
+    @Query("UPDATE song SET matchedVideoId = :matchedVideoId, matchConfidence = :confidence, matchStatus = :status, isEnriched = :isEnriched, metadataLastUpdated = :updatedAt WHERE id = :songId")
+    fun updateSongMatch(songId: String, matchedVideoId: String, confidence: Float, status: String, isEnriched: Boolean, updatedAt: Long = System.currentTimeMillis())
+
+    // Backward-Compatibility & Library Backfill Queries
+    @Query("SELECT * FROM song WHERE sourceId IS NULL OR sourceProvider IS NULL LIMIT :limit")
+    fun getSongsNeedingIdentityBackfill(limit: Int): List<SongEntity>
+
+    @Query("UPDATE song SET sourceId = :sourceId, sourceProvider = :sourceProvider, matchedVideoId = COALESCE(:matchedVideoId, matchedVideoId), matchConfidence = COALESCE(:confidence, matchConfidence), matchStatus = COALESCE(:status, matchStatus), isEnriched = :isEnriched, metadataLastUpdated = :updatedAt WHERE id = :songId")
+    fun updateSongIdentity(songId: String, sourceId: String, sourceProvider: String, matchedVideoId: String?, confidence: Float?, status: String?, isEnriched: Boolean, updatedAt: Long = System.currentTimeMillis())
+
+    @Query("SELECT DISTINCT playlistId FROM playlist_song_map JOIN song ON playlist_song_map.songId = song.id WHERE (song.matchedVideoId IS NULL OR song.matchedVideoId = '' OR song.isEnriched = 0)")
+    fun getPlaylistIdsWithUnresolvedSongs(): List<String>
+
+    @Query("SELECT COUNT(*) FROM song WHERE (matchedVideoId IS NULL OR matchedVideoId = '' OR isEnriched = 0) AND isLocal = 0")
+    fun getUnresolvedSongsCount(): Int
 }

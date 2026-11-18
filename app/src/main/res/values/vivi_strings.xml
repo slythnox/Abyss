@@ -57,7 +57,7 @@
     <string name="excluded_folders">Excluded folders</string>
     <string name="excluded_folders_desc">Choose which on-device folders local-only mode scans</string>
     <string name="excluded_folders_empty">No folders with music found yet. Tap Scan device to look again.</string>
-    <string name="excluded_folders_permission">RIFT needs permission to read audio on this device before it can list your folders.</string>
+    <string name="excluded_folders_permission">Abyss needs permission to read audio on this device before it can list your folders.</string>
     <string name="excluded_folders_custom">Excluded by hand</string>
     <string name="exclude_folder_add">Add folder</string>
     <string name="excluded_folders_song_count">%1$d songs</string>
@@ -252,7 +252,7 @@
     <string name="player_theme_tilt_vertical">Vertical</string>
     <string name="player_theme_tilt_horizontal">Horizontal</string>
     <string name="player_theme_tilt_diagonal">Diagonal</string>
-    <string name="player_theme_artwork_locked">Apple Music draws its own artwork, so shapes are unavailable with it.</string>
+    <string name="player_theme_artwork_locked">Default player uses full immersive artwork. Selecting a shape switches to theme background.</string>
     <string name="player_theme_artwork_locked_v17">Apple Music Player V17 uses its own thumbnail layout — Vinyl and Clover are unavailable.</string>
     <string name="slider_style">Seek bar</string>
     <string name="slim_navbar">Slim bottom navigation bar</string>
@@ -526,7 +526,7 @@
     <string name="karaoke">Karaoke</string>
     <string name="apple_music_style">Apple Music</string>
     <string name="apple_music_style_letter">Apple Music V2 (Letter by Letter)</string>
-    <string name="vivimusic_1">Rift (Fluid)</string>
+    <string name="vivimusic_1">Abyss (Fluid)</string>
     <string name="apple_music_lyrics_blur">Apple Music Lyrics Blur</string>
     <string name="apple_music_lyrics_blur_desc">Apply blur to inactive lyrics lines for a premium focus effect</string>
     <string name="lyrics_v2_fluid">Lyrics V2 (Fluid)</string>
@@ -556,21 +556,21 @@
     <string name="wrapped_total_artists_subtitle">unique artists</string>
     <string name="wrapped_total_songs_title">You listened to</string>
     <string name="wrapped_total_songs_subtitle">unique songs</string>
-    <string name="wrapped_intro_title">Rift Wrapped</string>
+    <string name="wrapped_intro_title">Abyss Wrapped</string>
     <string name="wrapped_intro_subtitle">Relive every beat, every replay, and every soundtrack of your year.</string>
     <string name="wrapped_intro_button">Unwrap Your Year</string>
-    <string name="wrapped_end_thanks">Thanks for listening with Rift!</string>
+    <string name="wrapped_end_thanks">Thanks for listening with Abyss!</string>
     <string name="wrapped_end_create_playlist">Create Your Wrapped Playlist</string>
     <string name="wrapped_end_creating_playlist">Creating...</string>
     <string name="wrapped_end_playlist_saved">Playlist Saved</string>
-    <string name="wrapped_logo_content_description">Rift Logo</string>
+    <string name="wrapped_logo_content_description">Abyss Logo</string>
     <string name="wrapped_year">2026</string>
-    <string name="wrapped_ready_title">YOUR RIFT WRAPPED IS READY!</string>
-    <string name="wrapped_ready_subtitle">Relive the soundtrack of your year with Rift.</string>
+    <string name="wrapped_ready_title">YOUR Abyss WRAPPED IS READY!</string>
+    <string name="wrapped_ready_subtitle">Relive the soundtrack of your year with Abyss.</string>
     <string name="wrapped_thank_you">Thank you for listening</string>
-    <string name="wrapped_special_thanks">Crafted for pure music enjoyment with Rift</string>
+    <string name="wrapped_special_thanks">Crafted for pure music enjoyment with Abyss</string>
     <string name="wrapped_close">Close Wrapped</string>
-    <string name="wrapped_playlist_title">Your %s Rift Wrapped</string>
+    <string name="wrapped_playlist_title">Your %s Abyss Wrapped</string>
     <string name="wrapped_create_playlist">Create Playlist</string>
     <string name="wrapped_playlist_saved">Playlist Saved</string>
 
@@ -599,7 +599,7 @@
     <string name="error_eq_apply_failed">Failed to apply EQ profile: %1$s</string>
 
     <!-- ViviEqualizer Strings -->
-    <string name="vivi_equalizer">Rift Equalizer</string>
+    <string name="vivi_equalizer">Abyss Equalizer</string>
     <string name="vivi_equalizer_desc">Pro-grade acoustic tuning &amp; effects</string>
     <string name="eq_simple">Simple</string>
     <string name="eq_advanced">Advanced</string>
@@ -607,7 +607,7 @@
     <string name="eq_label_mid">Mids</string>
     <string name="eq_label_treble">Treble</string>
     <string name="eq_preset_flat">Flat</string>
-    <string name="eq_preset_vivi_signature">Rift Signature</string>
+    <string name="eq_preset_vivi_signature">Abyss Signature</string>
     <string name="eq_preset_acoustic">Acoustic</string>
     <string name="eq_preset_spatial">3D Stage</string>
     <string name="eq_preset_bass_boost">Bass Boost</string>
@@ -624,9 +624,9 @@
     <string name="eq_preset_dirac_music">Dirac Music</string>
     <string name="eq_preset_dirac_movie">Dirac Movie</string>
     <string name="eq_preset_dirac_game">Dirac Game</string>
-    <string name="eq_enable_title">Rift Equalizer</string>
+    <string name="eq_enable_title">Abyss Equalizer</string>
     <string name="eq_enable_summary">Toggle professional audio processing</string>
-    <string name="eq_label_vivi">Rift Signature</string>
+    <string name="eq_label_vivi">Abyss Signature</string>
     <string name="eq_label_dolby">Dolby Atmos</string>
     <string name="eq_label_dirac">Dirac Audio</string>
     <string name="eq_reset">Reset</string>
@@ -644,9 +644,9 @@
     <string name="plays">plays</string>
     <string name="casting_to">Casting to %s</string>
     <string name="progress_percent">Progress %s%%</string>
-    <string name="listening_to_vivimusic">Listening to Rift</string>
+    <string name="listening_to_vivimusic">Listening to Abyss</string>
     <string name="listen_on_youtube_music">Listen on YouTube Music</string>
-    <string name="visit_vivimusic">Visit Rift</string>
+    <string name="visit_vivimusic">Visit Abyss</string>
     <string name="open">Open</string>
     <string name="failed_to_create_image">Failed to create image: %s</string>
     <string name="copied_title">Copied Title</string>
@@ -670,16 +670,16 @@
     <string name="like">Like</string>
     <string name="not_playing">No song playing</string>
     <string name="tap_to_play">Tap to open </string>
-    <string name="widget_music_player">Rift Dot Player</string>
-    <string name="widget_dot_player">Rift Dot Player</string>
+    <string name="widget_music_player">Abyss Dot Player</string>
+    <string name="widget_dot_player">Abyss Dot Player</string>
     <string name="widget_dot_player_desc">Compact 2×2 dot equaliser and album art player</string>
-    <string name="widget_lyrics_player">Rift Lyrics Player</string>
+    <string name="widget_lyrics_player">Abyss Lyrics Player</string>
     <string name="widget_lyrics_player_desc">Split-panel album artwork and synchronised lyrics display</string>
-    <string name="widget_vinyl_deck">Rift Vinyl Deck</string>
+    <string name="widget_vinyl_deck">Abyss Vinyl Deck</string>
     <string name="widget_vinyl_deck_desc">Retro vinyl record player with album art and transport controls</string>
-    <string name="widget_lyrics">Rift Lyrics Player</string>
+    <string name="widget_lyrics">Abyss Lyrics Player</string>
     <string name="widget_lyrics_description">Split-panel album artwork and synchronised lyrics display</string>
-    <string name="widget_turntable">Rift Vinyl Deck</string>
+    <string name="widget_turntable">Abyss Vinyl Deck</string>
     <string name="turntable_widget_description">Retro vinyl record player with album art and transport controls</string>
     <string name="widget_description">Compact 2×2 dot equaliser and album art player</string>
     <string name="widget_cfg_background">Background</string>

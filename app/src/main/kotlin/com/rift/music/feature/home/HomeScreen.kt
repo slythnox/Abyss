@@ -1421,7 +1421,7 @@ fun HomeScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(6.dp)
-                                        .background(Color(0xFFE53935), shape = CircleShape)
+                                        .background(Color(0xFF007DFE), shape = CircleShape)
                                 )
                             }
                             Spacer(Modifier.height(4.dp))
@@ -2145,14 +2145,19 @@ private fun LazyListScope.speedDialSection(
                                             RandomizeGridItem(
                                                 isLoading = isRandomizing,
                                                 onClick = {
-                                                    if (isRandomizing) {
-                                                        randomizeJob.value?.cancel()
-                                                    } else {
-                                                        randomizeJob.value = deps.scope.launch {
-                                                            deps.viewModel.playRandomDiscovery(deps.playerConnection)
-                                                        }
+                                                    deps.scope.launch {
+                                                        deps.viewModel.playRandomDiscovery(deps.playerConnection)
                                                     }
                                                 },
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .combinedBounceClick(
+                                                        onClick = {
+                                                            deps.scope.launch {
+                                                                deps.viewModel.playRandomDiscovery(deps.playerConnection)
+                                                            }
+                                                        }
+                                                    ),
                                                 cornerRadiusDp = speedDialCornerOverride,
                                             )
                                         }

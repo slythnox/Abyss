@@ -171,5 +171,5 @@ object FlacTagger {
     private val REPLACED = setOf(TYPE_PADDING, TYPE_VORBIS_COMMENT, TYPE_PICTURE)
     private const val MAX_BLOCK_BYTES = (1 shl 24) - 1
     private const val PICTURE_FRONT_COVER = 3
-    private const val VENDOR = "Rift"
+    private const val VENDOR = "Abyss"
 }

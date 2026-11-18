@@ -1,6 +1,6 @@
-# Rift Feature Catalogue & Functional Inventory
+# Abyss Feature Catalogue & Functional Inventory
 
-This document provides a comprehensive inventory of features available in **Rift** (Kotlin namespace `com.rift.music`, Android application ID `com.napster.music`), categorized across the 8 primary functional domains. Each entry is explicitly tagged with its verification status:
+This document provides a comprehensive inventory of features available in **Abyss** (Kotlin namespace `com.rift.music`, Android application ID `com.napster.music`), categorized across the 8 primary functional domains. Each entry is explicitly tagged with its verification status:
 
 - **[Implemented & tested]**: Automated unit tests execute and pass in CI/local Gradle runs.
 - **[Implemented but not device-tested]**: Feature is fully implemented in production code; automated tests exist or code builds cleanly, but physical device/hardware validation is pending connection.
@@ -109,7 +109,7 @@ This document provides a comprehensive inventory of features available in **Rift
 | **Preset Export & Import** | `PresetManager.kt` | Settings > Appearance > Presets | **Implemented & tested** | Archive import/export via `.napsterpreset` files (retained for backward compatibility). |
 | **Streamlined Top Header** | `HomeScreen.kt` | Home screen top bar | **Implemented & tested** | Displays clean brand wordmark; redundant settings icon removed (accessed via bottom dock). |
 | **App Usage Telemetry Graphs** | `AppUsageScreen.kt`, `AppUsageTelemetry.kt` | Settings > App Usage | **Implemented & tested** | Real-time cubic Bézier curves for CPU load, GPU frame duration, and data usage with 0 tracking daemons. |
-| **Homescreen Widgets (3 variants)** | `MetrolistWidgetManager.kt`, `MusicWidgetReceiver.kt`, `TurntableWidgetReceiver.kt`, `LyricsWidgetReceiver.kt` | Android launcher widget picker & home screen | **Implemented & tested** | 2×2 Rift Dot Player, 4×2 Rift Lyrics Player, and 4×2 Rift Vinyl Deck with smooth 25 FPS animations, partial RemoteViews updates without full re-inflation, dedicated launcher preview drawables/layouts, and clean turntable styling without stray outlines or badges. |
+| **Homescreen Widgets (3 variants)** | `MetrolistWidgetManager.kt`, `MusicWidgetReceiver.kt`, `TurntableWidgetReceiver.kt`, `LyricsWidgetReceiver.kt` | Android launcher widget picker & home screen | **Implemented & tested** | 2×2 Abyss Dot Player, 4×2 Abyss Lyrics Player, and 4×2 Abyss Vinyl Deck with smooth 25 FPS animations, partial RemoteViews updates without full re-inflation, dedicated launcher preview drawables/layouts, and clean turntable styling without stray outlines or badges. |
 
 ---
 
@@ -120,7 +120,7 @@ The following capabilities were present in ancestral or upstream repositories an
 | Excluded Feature | Engineering Rationale |
 |---|---|
 | **Donation / In-App Support Prompts** | Personal payment handles (UPI IDs) and donation dialog prompts were completely excised for user privacy, neutrality, and zero-commercialization integrity. |
-| **Listen Together / Social Rooms** | Required external WebSocket infrastructure and user identity servers. Rift is a serverless client player. |
+| **Listen Together / Social Rooms** | Required external WebSocket infrastructure and user identity servers. Abyss is a serverless client player. |
 | **Private Spotify Account Login** | Required fragile WebView scraping and session hijacking. Replaced by unauthenticated public playlist parsing. |
 | **Microphone / Shazam Audio Recognition** | Required `RECORD_AUDIO` permission and remote daemons. Schema entity `RecognitionHistory` retained solely for migration compatibility. |
 | **Discord Rich Presence (Kizzy)** | Deprecated daemon requiring background IPC and third-party tokens. |

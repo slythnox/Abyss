@@ -1,3 +1,4 @@
+# Abyss Dependencies & Versions Catalog
 [versions]
 androidGradlePlugin = "9.2.1"
 kotlin = "2.3.10"

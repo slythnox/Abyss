@@ -1,12 +1,12 @@
 # Release Readiness Checklist
 
-This document provides a factual, step-by-step verification checklist required prior to tagging or publishing a release of Rift.
+This document provides a factual, step-by-step verification checklist required prior to tagging or publishing a release of Abyss.
 
 ---
 
 ## 1. Functional Verification
 
-- [ ] **Unified Branding:** Verify that the launcher icon, adaptive icon, splash screen, top app bar, widgets, and settings screens display "Rift" consistently without residual fork titles.
+- [ ] **Unified Branding:** Verify that the launcher icon, adaptive icon, splash screen, top app bar, widgets, and settings screens display "Abyss" consistently without residual fork titles.
 - [ ] **Settings Navigation Integrity:** Verify that every destination in `SettingsScreen.kt` navigates correctly and that deleted legacy routes (e.g. Account, Legacy Story, Listen Together) are completely inaccessible.
 - [ ] **Privacy Disclosures:** Confirm that `AboutScreen.kt` and `PrivacySettings.kt` accurately reflect data storage and external network flows without fabricated telemetry claims.
 - [ ] **Public Playlist Ingestion:** Confirm that valid public Spotify and YouTube Music playlist URLs import successfully, resolve track titles, and populate the local Room database.

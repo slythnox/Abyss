@@ -903,53 +903,8 @@ fun PlayerV2(
                             )
                         }
                     }
-                    
-                    Spacer(modifier = Modifier.height(24.dp))
-                    
-                    // Audio Volume Component
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Default.VolumeMute, contentDescription = "Volume Down", tint = adaptiveSecondary, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(16.dp))
-                        
-                        val volumeInteractionSource = remember { MutableInteractionSource() }
-                        val isVolDragged by volumeInteractionSource.collectIsDraggedAsState()
-                        val isVolPressed by volumeInteractionSource.collectIsPressedAsState()
-                        val isVolActive = isVolDragged || isVolPressed
-                        
-                        val volHeight by animateDpAsState(
-                            targetValue = if (isVolActive) 12.dp else 6.dp,
-                            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                            label = "volHeight"
-                        )
-                        
-                        Slider(
-                            value = if (isVolActive) systemVolume else animatedVolume,
-                            onValueChange = { newValue ->
-                                systemVolume = newValue
-                                val targetVolume = (newValue * maxSystemVolume).toInt()
-                                audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, targetVolume, 0)
-                            },
-                            interactionSource = volumeInteractionSource,
-                            thumb = { Spacer(modifier = Modifier.size(0.dp)) },
-                            track = { sliderState ->
-                                PlayerSliderTrack(
-                                    sliderState = sliderState,
-                                    trackHeight = volHeight, 
-                                    colors = PlayerSliderColors.getSliderColors(
-                                        activeColor = adaptivePrimary.copy(alpha = 0.8f)
-                                    )
-                                )
-                            },
-                            modifier = Modifier.weight(1f).height(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                            Icon(Icons.Default.VolumeUp, contentDescription = "Volume Up", tint = adaptiveSecondary, modifier = Modifier.size(24.dp))
-                        }
-                    }
                 }
+            }
             // (Controls AnimatedVisibility closed above)
 
             // Bottom Utility Action Bar

@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.sp
  */
 object AppleTokens {
     // Accent
-    val AccentRed = Color(0xFFF20329)
-    val AccentBlue = AccentRed
+    val AccentRed = Color(0xFF007DFE)
+    val AccentBlue = Color(0xFF007DFE)
 
     // Surfaces — Apple-style soft dark greys, not pure black (pure black stays an
     // opt-in via the PureBlack setting for OLED). Monotonic elevation ladder.
@@ -136,9 +136,9 @@ object AppleTokens {
     fun onColorSecondary(bg: Color): Color = Color(0xFF9EACB9)
 
     /**
-     * Headings on [bg]: red accent matching Rift logo crimson.
+     * Headings on [bg]: red accent matching Abyss electric blue.
      */
-    fun onColorHeading(bg: Color): Color = Color(0xFFFF4D68)
+    fun onColorHeading(bg: Color): Color = Color(0xFF5B9DFF)
 
     /**
      * @param lightness (on-dark, on-light) target lightness.

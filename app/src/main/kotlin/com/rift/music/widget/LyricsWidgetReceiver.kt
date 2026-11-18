@@ -41,7 +41,7 @@ class LyricsWidgetReceiver : MusicWidgetReceiver() {
                 views.setInt(R.id.widget_lyrics_root, "setBackgroundResource", R.drawable.widget_lyrics_card_bg)
                 // Use dedicated proportional standby panel with note and red accent divider
                 views.setImageViewResource(R.id.widget_lyrics_art, R.drawable.ic_widget_lyrics_art_idle)
-                views.setTextViewText(R.id.widget_lyrics_prev_text, "Rift")
+                views.setTextViewText(R.id.widget_lyrics_prev_text, "Abyss")
                 views.setTextViewText(R.id.widget_lyrics_active_text, "Tap to start listening")
                 views.setTextViewText(R.id.widget_lyrics_dots_indicator, "•  •  •")
                 views.setOnClickPendingIntent(R.id.widget_lyrics_root, openAppIntent)

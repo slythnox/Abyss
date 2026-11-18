@@ -1,184 +1,96 @@
 package com.rift.music.feature.settings
 
 import com.rift.music.ui.utils.appTopBarWindowInsets
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import android.content.res.Configuration
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import android.os.Build
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.animation.AnimatedVisibility
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.animation.core.Spring
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.animation.core.animateDpAsState
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.animation.core.animateFloatAsState
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.animation.core.spring
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.animation.core.tween
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.animation.fadeIn
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.animation.fadeOut
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.animation.scaleIn
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.animation.scaleOut
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.BorderStroke
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.Canvas
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.background
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.ui.utils.bounceClick
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.ui.utils.combinedBounceClick
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.isSystemInDarkTheme
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.Arrangement
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.Box
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.Column
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.PaddingValues
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.Row
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.Spacer
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.aspectRatio
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.height
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.heightIn
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.padding
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.size
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.width
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.lazy.LazyRow
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.lazy.items
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.rememberScrollState
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.shape.CircleShape
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.shape.RoundedCornerShape
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.verticalScroll
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.Card
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.CardDefaults
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.ExperimentalMaterial3Api
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.Icon
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.IconButton
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.MaterialTheme
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.Text
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.TextButton
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.TopAppBar
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.dynamicDarkColorScheme
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.dynamicLightColorScheme
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.ripple
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.Composable
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.getValue
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.mutableStateOf
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.remember
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.setValue
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.ui.component.ColorPickerDialog
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.Alignment
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.Modifier
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.draw.clip
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.geometry.Offset
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.geometry.Size
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.graphics.Color
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.graphics.graphicsLayer
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.graphics.toArgb
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.platform.LocalConfiguration
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.platform.LocalContext
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.res.painterResource
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.res.stringResource
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.semantics.contentDescription
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.semantics.semantics
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.unit.dp
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.navigation.NavController
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.materialkolor.PaletteStyle
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.materialkolor.rememberDynamicColorScheme
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.R
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.DarkModeKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.DynamicThemeKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.PureBlackKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.PureBlackMiniPlayerKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.SelectedThemeColorKey
 import com.rift.music.constants.AppBackgroundColorKey
 import com.rift.music.constants.AppTextColorKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.ui.theme.AppleTokens
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.ui.theme.DefaultThemeColor
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.ui.theme.vivimusicTheme
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.utils.rememberEnumPreference
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.utils.rememberPreference
 import androidx.compose.foundation.layout.windowInsetsPadding
 import com.rift.music.LocalPlayerAwareWindowInsets
@@ -204,6 +116,8 @@ fun ThemeScreen(
         DefaultThemeColor.toArgb()
     )
     val (_, onDynamicThemeChange) = rememberPreference(DynamicThemeKey, defaultValue = false)
+    val (_, onBackgroundColorChange) = rememberPreference(AppBackgroundColorKey, defaultValue = 0)
+    val (_, onTextColorChange) = rememberPreference(AppTextColorKey, defaultValue = 0)
 
     val selectedThemeColor = Color(selectedThemeColorInt)
     val configuration = LocalConfiguration.current
@@ -224,6 +138,8 @@ fun ThemeScreen(
         onPureBlackChange(false)
         onSelectedThemeColorChange(DefaultThemeColor.toArgb())
         onDynamicThemeChange(false)
+        onBackgroundColorChange(0)
+        onTextColorChange(0)
     }
 
     if (isLandscape) {
@@ -517,6 +433,16 @@ data class ThemePresetItem(
 
 private val BuiltinThemePresets = listOf(
     ThemePresetItem(
+        nameRes = R.string.default_style,
+        darkMode = DarkMode.AUTO,
+        pureBlack = false,
+        themeColor = DefaultThemeColor,
+        backgroundColor = null,
+        textColor = null,
+        dynamicTheme = false,
+        previewGradient = listOf(Color(0xFF007DFE), Color(0xFF0B192C), Color(0xFF000000))
+    ),
+    ThemePresetItem(
         nameRes = R.string.theme_preset_oled,
         darkMode = DarkMode.ON,
         pureBlack = true,
@@ -668,12 +594,30 @@ private fun AppBackgroundTextColorSection() {
     var showBackgroundPicker by remember { mutableStateOf(false) }
     var showTextPicker by remember { mutableStateOf(false) }
 
+    val hasCustomColors = backgroundColorInt != 0 || textColorInt != 0
+
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(
-            text = stringResource(R.string.app_background_text_color),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.app_background_text_color),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (hasCustomColors) {
+                TextButton(
+                    onClick = {
+                        onBackgroundColorChange(0)
+                        onTextColorChange(0)
+                    }
+                ) {
+                    Text(stringResource(R.string.reset))
+                }
+            }
+        }
         Text(
             text = stringResource(R.string.app_background_text_color_desc),
             style = MaterialTheme.typography.bodySmall,

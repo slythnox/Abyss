@@ -1,12 +1,12 @@
 # Database and Preferences Architecture
 
-This document describes the local persistence layer of Rift, including Room SQLite schemas, migrations, Data Access Objects (DAOs), transaction safety, and Jetpack DataStore preferences.
+This document describes the local persistence layer of Abyss, including Room SQLite schemas, migrations, Data Access Objects (DAOs), transaction safety, and Jetpack DataStore preferences.
 
 ---
 
 ## 1. Room SQLite Database (`com.rift.music.db`)
 
-Rift relies on AndroidX Room for all structured local persistence. The database definition and configuration are maintained in `MusicDatabase.kt` / `InternalDatabase` and injected via Dagger Hilt in `AppModule.kt`.
+Abyss relies on AndroidX Room for all structured local persistence. The database definition and configuration are maintained in `MusicDatabase.kt` / `InternalDatabase` and injected via Dagger Hilt in `AppModule.kt`.
 
 - **Current Schema Version:** 38
 - **Primary Schema Export Directory:** `app/schemas/com.rift.music.db.InternalDatabase/` (with `app/schemas/com.beatwave.music.db.InternalDatabase/` retained for historical discovery).

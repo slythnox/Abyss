@@ -6,122 +6,64 @@
 package com.rift.music.feature.settings
 
 import com.rift.music.ui.utils.appTopBarWindowInsets
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import android.app.Activity
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import android.content.Context
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import android.content.Intent
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import android.os.Build
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.core.content.edit
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.ui.utils.bounceClick
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.Arrangement
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.Column
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.Row
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.Spacer
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.height
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.padding
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.size
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.layout.windowInsetsPadding
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.rememberScrollState
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.foundation.verticalScroll
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.ExperimentalMaterial3Api
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.Icon
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.MaterialTheme
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.SnackbarHostState
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.ui.component.GlassSwitchCompat as Switch
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.SwitchDefaults
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.Text
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.TextButton
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.TopAppBar
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.material3.TopAppBarScrollBehavior
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.Composable
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.getValue
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.mutableFloatStateOf
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.mutableStateOf
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.remember
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.saveable.rememberSaveable
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.runtime.setValue
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.Alignment
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.Modifier
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.res.painterResource
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.res.stringResource
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.compose.ui.unit.dp
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import androidx.navigation.NavController
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.LocalPlayerAwareWindowInsets
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.R
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.CanvasSource
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.CanvasSourceKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.CanvasThumbnailAnimationKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.ChipSortTypeKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.CropAlbumArtKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.DefaultOpenTabKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.DensityScale
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.DensityScaleKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.DynamicThemeKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.EnableSettingsPopupKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.EnableHighRefreshRateKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.EnableLyricsThumbnailPlayPauseKey
 import com.rift.music.constants.OneTapFullscreenLyricsKey
 import com.rift.music.constants.FullscreenLyricsCollapseTopKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.IosOverscrollKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.GridItemSize
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.GridItemsSizeKey
 import com.rift.music.constants.GridCardHeightOverrideKey
 import com.rift.music.constants.GridColumnsOverrideKey
@@ -162,7 +104,6 @@ import com.rift.music.constants.SwipeThumbnailKey
 import com.rift.music.constants.SwipeToRemoveSongKey
 import com.rift.music.constants.SwipeToSongKey
 import com.rift.music.constants.ThumbnailCornerRadiusKey
-import com.rift.music.constants.UseAppleMusicPlayerKey
 import com.rift.music.constants.UseNewMiniPlayerDesignKey
 import com.rift.music.constants.UseNewPlayerDesignKey
 import com.rift.music.ui.component.DefaultDialog
@@ -171,26 +112,17 @@ import com.rift.music.ui.component.IconButton
 import com.rift.music.ui.component.Material3SettingsGroup
 import com.rift.music.ui.component.Material3SettingsItem
 import com.rift.music.ui.component.ThumbnailCornerRadiusModal
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.ui.utils.backToMain
 import com.rift.music.utils.rememberEnumPreference
 import com.rift.music.utils.rememberPreference
 import kotlin.math.roundToInt
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.LyricsClickKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.AppleMusicLyricsBlurKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.LyricsGlowEffectKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.LyricsLineSpacingKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.LyricsScrollKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.ShowAudioQualityBadgeKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.MiniPlayerWaveformKey
-import com.rift.music.ui.utils.appTopBarWindowInsets
 import com.rift.music.constants.AppFont
 import com.rift.music.constants.SelectedFontKey
 
@@ -206,10 +138,6 @@ fun AppearanceSettings(
     val (miniBarTabStyle, onMiniBarTabStyleChange) = rememberPreference(MiniBarTabStyleKey, defaultValue = false)
     val (_, _) = rememberPreference(DynamicThemeKey, defaultValue = true)
     val (useNewPlayerDesign, _) = rememberPreference(UseNewPlayerDesignKey, defaultValue = false)
-    // DIY stickers have no equivalent slot in the ported Apple Music Player V17
-    // layout, so its entry point is hidden rather than left dangling to a
-    // customization that would silently never render.
-    val (useAppleMusicPlayer, _) = rememberPreference(UseAppleMusicPlayerKey, defaultValue = false)
     val (showAudioQualityBadge, onShowAudioQualityBadgeChange) = rememberPreference(
         ShowAudioQualityBadgeKey,
         defaultValue = true
@@ -573,13 +501,7 @@ fun AppearanceSettings(
                     title = { Text(stringResource(R.string.player_icons)) },
                     description = { Text(stringResource(R.string.player_icons_desc)) },
                     onClick = { navController.navigate("settings/appearance/playericons") }
-                ),
-                if (!useAppleMusicPlayer) Material3SettingsItem(
-                    icon = painterResource(R.drawable.edit),
-                    title = { Text(stringResource(R.string.diy)) },
-                    description = { Text(stringResource(R.string.diy_desc)) },
-                    onClick = { navController.navigate("settings/appearance/diy") }
-                ) else null
+                )
             )
         )
 

@@ -2,13 +2,19 @@ package com.rift.music.feature.spotifyimport
 
 import android.content.Context
 import com.rift.music.db.MusicDatabase
+import com.rift.music.db.entities.AlbumEntity
 import com.rift.music.db.entities.ArtistEntity
 import com.rift.music.db.entities.PlaylistEntity
 import com.rift.music.db.entities.PlaylistSongMap
 import com.rift.music.db.entities.Song
+import com.rift.music.db.entities.SongAlbumMap
+import com.rift.music.db.entities.SongArtistMap
 import com.rift.music.db.entities.SongEntity
 import com.rift.music.models.MediaMetadata
 import com.rift.music.models.toMediaMetadata
+import com.rift.music.playback.diagnostics.PlaybackDiagnostics
+import com.rift.music.playback.diagnostics.PlaybackEventType
+import com.rift.music.playback.resolver.ProviderMappingRepository
 import com.rift.music.utils.reportException
 import com.music.innertube.YouTube
 import com.music.innertube.models.SongItem
@@ -42,6 +48,8 @@ class SpotifyPlaylistImporter(
     private val context: Context? = null,
     private val spotifyClient: SpotifyMetadataClient = PublicSpotifyMetadataClient(),
 ) {
+    private val providerMappingRepo = ProviderMappingRepository(database)
+
     /**
      * Comprehensive import workflow emitting structured [SpotifyImportState] updates.
      */
@@ -135,41 +143,72 @@ class SpotifyPlaylistImporter(
                     totalTracks = batch.totalCount
                 }
 
-                // Step 1: Concurrently resolve batch tracks with bounded semaphore, polite pacing and per-track timeout
-                val resolvedBatch = coroutineScope {
+                // Step 1: Prepare persistent metadata for all tracks in this batch.
+                // Pre-resolve first 5 tracks in batch 0 so playback can start immediately.
+                val preparedTracks = coroutineScope {
                     batch.tracks.mapIndexed { index, track ->
                         async {
                             currentCoroutineContext().ensureActive()
-                            semaphore.withPermit {
-                                currentCoroutineContext().ensureActive()
-                                // Add polite inter-request pacing so YouTube Music search does not rate-limit
-                                if (index > 0) {
-                                    delay(40)
-                                }
+                            if (track.name.isBlank()) return@async null
+
+                            val rawId = track.id.ifBlank { java.util.UUID.randomUUID().toString() }
+                            val songId = if (rawId.startsWith("spotify:")) rawId else "spotify:$rawId"
+
+                            // Check existing provider mapping in DB
+                            val existing = providerMappingRepo.getValidMapping(rawId)
+                            var matchedVideoId = existing?.providerTrackId
+                            var matchConfidence = existing?.confidence
+                            var matchStatus = existing?.matchStatus ?: "UNRESOLVED"
+                            var isEnriched = existing != null && existing.matchStatus == "MATCHED"
+
+                            // Pre-resolve first 5 tracks in batch 0
+                            if (!isEnriched && batch.offset == 0 && index < 5) {
                                 try {
-                                    withTimeoutOrNull(12_000L) {
-                                        val song = Song(
-                                            song = SongEntity(
-                                                id = track.id,
+                                    semaphore.withPermit {
+                                        currentCoroutineContext().ensureActive()
+                                        if (index > 0) delay(60)
+                                        withTimeoutOrNull(6_000L) {
+                                            val resolved = providerMappingRepo.resolveAndPersist(
+                                                sourceId = rawId,
                                                 title = track.name,
-                                                duration = track.durationMs / 1000,
-                                                thumbnailUrl = track.album?.images?.firstOrNull()?.url ?: batch.coverUrl,
-                                            ),
-                                            artists = track.artists.map { artist ->
-                                                ArtistEntity(id = artist.id ?: "", name = artist.name)
-                                            },
-                                        )
-                                        resolveTrack(song)
+                                                artist = track.artists.firstOrNull()?.name.orEmpty(),
+                                                album = track.album?.name,
+                                                durationMs = track.durationMs,
+                                            )
+                                            if (resolved != null) {
+                                                matchedVideoId = resolved.providerTrackId
+                                                matchConfidence = resolved.confidence
+                                                matchStatus = resolved.matchStatus
+                                                isEnriched = true
+                                            }
+                                        }
                                     }
                                 } catch (e: Exception) {
                                     if (e is CancellationException) throw e
-                                    Timber.tag(TAG).w(e, "Resolution failed for track ${track.name}")
-                                    reportException(e)
-                                    null
+                                    // Non-fatal: background worker will enrich
                                 }
                             }
+
+                            val songEntity = SongEntity(
+                                id = songId,
+                                title = track.name,
+                                duration = track.durationMs / 1000,
+                                thumbnailUrl = track.album?.images?.firstOrNull()?.url ?: batch.coverUrl,
+                                albumId = track.album?.id?.takeIf { it.isNotBlank() }?.let { "spotify:$it" },
+                                albumName = track.album?.name,
+                                explicit = false,
+                                sourceId = rawId,
+                                sourceProvider = "spotify",
+                                matchedVideoId = matchedVideoId,
+                                matchConfidence = matchConfidence,
+                                matchStatus = matchStatus,
+                                metadataLastUpdated = System.currentTimeMillis(),
+                                isEnriched = isEnriched,
+                            )
+
+                            Triple(songEntity, track.artists, track.album)
                         }
-                    }.awaitAll()
+                    }.awaitAll().filterNotNull()
                 }
 
                 var batchImported = 0
@@ -179,7 +218,7 @@ class SpotifyPlaylistImporter(
                 val isLastBatch = batch.isLast || (totalTracks > 0 && newNextOffset >= totalTracks)
 
                 val nextStatus = when {
-                    isLastBatch && (importedCount + batchImported) == 0 -> SpotifyImportStatus.FAILED
+                    isLastBatch && (importedCount + batchImported) == 0 && preparedTracks.isEmpty() -> SpotifyImportStatus.FAILED
                     isLastBatch && (failedCount + batchFailed) > 0 -> SpotifyImportStatus.COMPLETED_WITH_ERRORS
                     isLastBatch -> SpotifyImportStatus.COMPLETED
                     else -> SpotifyImportStatus.PROCESSING
@@ -206,19 +245,64 @@ class SpotifyPlaylistImporter(
                         insert(initialEntity)
                     }
 
-                    for (matched in resolvedBatch) {
-                        if (matched != null) {
-                            insert(matched)
+                    for ((songEntity, artists, album) in preparedTracks) {
+                        try {
+                            // 1. Album (if present)
+                            if (album != null && album.id.isNotBlank()) {
+                                val albumId = "spotify:${album.id}"
+                                insert(
+                                    AlbumEntity(
+                                        id = albumId,
+                                        title = album.name,
+                                        thumbnailUrl = album.images.firstOrNull()?.url ?: batch.coverUrl,
+                                        songCount = 0,
+                                        duration = 0,
+                                        lastUpdateTime = now,
+                                    )
+                                )
+                                insert(
+                                    SongAlbumMap(
+                                        songId = songEntity.id,
+                                        albumId = albumId,
+                                        index = 0,
+                                    )
+                                )
+                            }
+
+                            // 2. Artists
+                            artists.forEachIndexed { aIndex, artist ->
+                                val aId = artist.id?.takeIf { it.isNotBlank() }?.let { "spotify:$it" } ?: ArtistEntity.generateArtistId()
+                                insert(
+                                    ArtistEntity(
+                                        id = aId,
+                                        name = artist.name,
+                                    )
+                                )
+                                insert(
+                                    SongArtistMap(
+                                        songId = songEntity.id,
+                                        artistId = aId,
+                                        position = aIndex,
+                                    )
+                                )
+                            }
+
+                            // 3. SongEntity
+                            insert(songEntity)
+
+                            // 4. PlaylistSongMap
                             insert(
                                 PlaylistSongMap(
                                     playlistId = dbPlaylistId,
-                                    songId = matched.id,
+                                    songId = songEntity.id,
                                     position = currentPosition++,
-                                    setVideoId = matched.setVideoId,
-                                ),
+                                    setVideoId = null,
+                                )
                             )
                             batchImported++
-                        } else {
+                        } catch (e: Exception) {
+                            if (e is CancellationException) throw e
+                            Timber.tag(TAG).w(e, "Failed to persist track ${songEntity.title}")
                             batchFailed++
                         }
                     }
@@ -356,6 +440,8 @@ class SpotifyPlaylistImporter(
                     timestampMs = System.currentTimeMillis(),
                 )
                 SpotifyImportCheckpointStore.saveCheckpoint(context, finalCheckpoint)
+                // Enqueue background enrichment to progressively map remaining tracks
+                PlaylistEnrichmentWorker.enqueue(context, dbPlaylistId)
             }
 
             return currentState

@@ -1311,7 +1311,8 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(effectiveRoute, showRail) {
                     shouldShowTopBar = !showRail &&
                         effectiveRoute in topLevelScreens &&
-                        effectiveRoute != "settings"
+                        effectiveRoute != "settings" &&
+                        effectiveRoute != Screens.Home.route
                 }
 
                 val coroutineScope = rememberCoroutineScope()
@@ -1607,19 +1608,7 @@ class MainActivity : ComponentActivity() {
                                         TopAppBar(
                                         title = {
                                              val isHome = effectiveRoute == Screens.Home.route
-                                             if (isHome) {
-                                                 Text(
-                                                     text = BrandName,
-                                                     style = MaterialTheme.typography.titleLarge.copy(
-                                                         fontFamily = rememberBrandFontFamily(),
-                                                         fontWeight = FontWeight.ExtraBold,
-                                                         fontSize = 25.sp,
-                                                         letterSpacing = (-0.3).sp,
-                                                     ),
-                                                     color = LocalAccentTextColor.current,
-                                                     modifier = Modifier.padding(start = 4.dp),
-                                                 )
-                                             } else {
+                                             if (!isHome) {
                                                  Text(
                                                      text = currentTitleRes?.let { stringResource(it) } ?: "",
                                                      style = MaterialTheme.typography.titleLarge.copy(
@@ -1632,7 +1621,7 @@ class MainActivity : ComponentActivity() {
                                              }
                                          },
                                         actions = {
-                                            if (effectiveRoute != Screens.Home.route) {
+                                            if (effectiveRoute != Screens.Home.route && effectiveRoute != Screens.Library.route) {
                                                 IconButton(onClick = {
                                                     if (enableSettingsPopup) {
                                                         showSettingDialoge = true

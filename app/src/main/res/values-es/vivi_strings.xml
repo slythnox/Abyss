@@ -324,8 +324,8 @@
     <string name="slide">Deslizar</string>
     <string name="karaoke">Karaoke</string>
     <string name="apple_music_style">Estilo Apple Music</string>
-    <string name="wrapped_end_thanks">¡Gracias por escuchar con Rift!</string>
-    <string name="wrapped_logo_content_description">Logo de Rift</string>
+    <string name="wrapped_end_thanks">¡Gracias por escuchar con Abyss!</string>
+    <string name="wrapped_logo_content_description">Logo de Abyss</string>
     <string name="wrapped_year">2026</string>
     <string name="show_artist_description">Mostrar descripción del artista</string>
     <string name="show_artist_subscriber_count">Ver numero de suscriptores</string>
@@ -604,7 +604,7 @@
     <string name="button_text">Texto del botón</string>
     <string name="button_visible">Visible</string>
     <string name="login_successful">¡Inicio de sesión con éxito!</string>
-    Reproduciendo Rift
-    Viendo Rift
+    Reproduciendo Abyss
+    Viendo Abyss
     Compitiendo en 
 </resources>

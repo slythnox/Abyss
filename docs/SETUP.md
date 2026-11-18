@@ -1,6 +1,6 @@
 # Development Environment Setup
 
-This document describes the prerequisites and configuration required to establish a development environment for the Rift Android application.
+This document describes the prerequisites and configuration required to establish a development environment for the Abyss Android application.
 
 ---
 

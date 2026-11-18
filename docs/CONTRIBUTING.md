@@ -1,6 +1,6 @@
-# Contributing to Rift
+# Contributing to Abyss
 
-Thank you for your interest in contributing to Rift. This guide outlines architectural constraints, engineering standards, and the pull request workflow.
+Thank you for your interest in contributing to Abyss. This guide outlines architectural constraints, engineering standards, and the pull request workflow.
 
 ---
 

@@ -39,7 +39,7 @@ flowchart LR
 
 ## 2. Public Spotify Playlist Import Pipeline
 
-Rift incorporates a privacy-preserving playlist importer that ingests Spotify playlists without requiring user authentication, OAuth tokens, or account credentials.
+Abyss incorporates a privacy-preserving playlist importer that ingests Spotify playlists without requiring user authentication, OAuth tokens, or account credentials.
 
 ```mermaid
 flowchart TD
@@ -74,13 +74,12 @@ flowchart TD
    - For each scraped track, performs an InnerTube search using `{track_name} {artist_name}`.
    - Evaluates search candidates against duration bounds (typically within ±5 seconds of the source track length).
    - Selects the optimal matching YouTube Music video ID.
-4. **Incremental Batch Database Persistence:**
-   - Handles large playlists (4,000+ tracks) incrementally in paged batches of 100 tracks rather than dumping thousands of records in a single monolithic transaction.
-   - Creates/updates `PlaylistEntity` immediately upon first batch, saving metadata, cover art, and progress.
-   - Uses bounded concurrency (`Semaphore(4)`) for YouTube Music track resolution.
-   - Persists each resolved batch directly into Room within its own transaction (`insert(songs)`, `insert(playlistSongMaps)`), ensuring already resolved songs are preserved if network drops or device sleeps.
-   - Deduplicates tracks and preserves intentional track sequences.
-   - Tracks metrics: `importedCount`, `skippedCount`, and `failedCount`. Unmatchable tracks are counted in `failedCount` without unnecessarily aborting the entire playlist.
+4. **Persistent Playlist Intelligence & Batch Durability:**
+   - **Zero Track Dropping:** All imported tracks are persisted immediately into `SongEntity` with deterministic `sourceId` and `sourceProvider = "spotify"` identifiers (`spotify:<rawId>`), establishing durable metadata (title, artist, album, duration, artwork, order).
+   - **FK Integrity Order:** Songs, albums, artists, and junction mappings are persisted in strict relational order inside Room transactions, preventing SQLite constraint violations (code 787).
+   - **Immediate Offline Usability:** The imported playlist is immediately 100% visible, browsable, and searchable offline without waiting for external provider matching.
+   - **Eager First-Batch Resolution:** The first 5 tracks (Batch 0) are resolved synchronously so playback can start immediately upon import completion.
+   - **Polite Background Enrichment:** Remaining tracks are scheduled for background resolution via WorkManager (`PlaylistEnrichmentWorker`), operating with network constraints and polite batching to avoid provider rate limiting.
 5. **Background Foreground Execution & Persistent Notifications (`SpotifyImportService`):**
    - **DataSync Foreground Service:** Implemented as `SpotifyImportService`, a dedicated Android foreground service with `foregroundServiceType="dataSync"`.
    - **Persistent Notification:** Remains active throughout import execution with:
@@ -102,7 +101,7 @@ flowchart TD
 
 ## 3. Public YouTube Music Playlist Import Pipeline
 
-Rift also supports importing public and unlisted YouTube and YouTube Music playlists directly without requiring account sign-in or OAuth tokens.
+Abyss also supports importing public and unlisted YouTube and YouTube Music playlists directly without requiring account sign-in or OAuth tokens.
 
 ```mermaid
 flowchart TD

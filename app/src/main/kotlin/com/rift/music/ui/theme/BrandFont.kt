@@ -15,7 +15,7 @@ import com.rift.music.constants.BrandFontEnabledKey
 import com.rift.music.utils.rememberPreference
 
 /** The product wordmark. */
-const val BrandName = "Rift"
+const val BrandName = "Abyss"
 
 /** Chillax — display face for artist titles. */
 val ChillaxFontFamily = FontFamily(

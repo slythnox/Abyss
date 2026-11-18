@@ -1,6 +1,6 @@
 # Documentation Suite
 
-Welcome to the technical documentation suite for **Rift**, an open-source Android music player engineered with Jetpack Compose, AndroidX Media3 / ExoPlayer, Room, and YouTube Music streaming via InnerTube.
+Welcome to the technical documentation suite for **Abyss**, an open-source Android music player engineered with Jetpack Compose, AndroidX Media3 / ExoPlayer, Room, and YouTube Music streaming via InnerTube.
 
 ---
 

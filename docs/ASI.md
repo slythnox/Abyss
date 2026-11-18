@@ -1,7 +1,7 @@
 # Project ASI 1.0 — Adaptive Session Intelligence
 
 ## 1. Overview & Vision
-Project ASI 1.0 (Adaptive Session Intelligence) is an on-device recommendation intelligence and trajectory optimization system for **Rift**. Rather than treating autoplay as naive 1-to-1 song similarity or relying solely on external uncurated recommendation endpoints, ASI models the listening session dynamically.
+Project ASI 1.0 (Adaptive Session Intelligence) is an on-device recommendation intelligence and trajectory optimization system for **Abyss**. Rather than treating autoplay as naive 1-to-1 song similarity or relying solely on external uncurated recommendation endpoints, ASI models the listening session dynamically.
 
 ASI operates entirely on-device, preserving privacy and maintaining sub-second latency while guaranteeing:
 - **Session context awareness:** Dynamically inferred listening modes (Party, Workout, Relaxed, Romantic, Focus, Discovery, Commute, General) with confidence-scaled adaptation.

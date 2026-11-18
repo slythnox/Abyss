@@ -88,7 +88,7 @@ object DebugLogs {
     fun tree(context: Context): FileLoggingTree = FileLoggingTree(file(context))
 
     private fun deviceHeader(context: Context): String = buildString {
-        appendLine("Rift Debug Log")
+        appendLine("Abyss Debug Log")
         appendLine("=".repeat(50))
         appendLine("Time: ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())}")
         appendLine("Manufacturer: ${Build.MANUFACTURER}")
@@ -131,7 +131,7 @@ object DebugLogs {
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_STREAM, uri)
-                putExtra(Intent.EXTRA_SUBJECT, "Rift debug log")
+                putExtra(Intent.EXTRA_SUBJECT, "Abyss debug log")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
             context.startActivity(Intent.createChooser(intent, "Share debug log"))
@@ -139,7 +139,7 @@ object DebugLogs {
             val intent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, body)
-                putExtra(Intent.EXTRA_SUBJECT, "Rift debug log")
+                putExtra(Intent.EXTRA_SUBJECT, "Abyss debug log")
             }
             context.startActivity(Intent.createChooser(intent, "Share debug log"))
         }

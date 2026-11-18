@@ -55,7 +55,15 @@ data class SongEntity(
     @ColumnInfo(name = "isUploaded", defaultValue = false.toString())
     val isUploaded: Boolean = false,
     @ColumnInfo(name = "isVideo", defaultValue = false.toString())
-    val isVideo: Boolean = false
+    val isVideo: Boolean = false,
+    val sourceId: String? = null,
+    val sourceProvider: String? = null,
+    val matchedVideoId: String? = null,
+    val matchConfidence: Float? = null,
+    val matchStatus: String? = null,
+    val metadataLastUpdated: Long? = null,
+    @ColumnInfo(defaultValue = "0")
+    val isEnriched: Boolean = false,
 ) {
     fun localToggleLike() = copy(
         liked = !liked,

@@ -58,5 +58,5 @@ jobs:
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: napster-arm64-foss-debug
+          name: abyss-arm64-foss-debug
           path: app/build/outputs/apk/arm64Foss/debug/*.apk

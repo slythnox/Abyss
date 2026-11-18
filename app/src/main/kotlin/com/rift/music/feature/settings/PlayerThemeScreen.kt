@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Napster (C) 2026
  * Licensed under GPL-3.0 | See git history for contributors
  */
@@ -147,6 +147,11 @@ fun PlayerThemeScreen(
     val (useAppleMusicPlayer, onUseAppleMusicPlayerChange) = rememberPreference(
         UseAppleMusicPlayerKey, defaultValue = false
     )
+    LaunchedEffect(useAppleMusicPlayer) {
+        if (useAppleMusicPlayer) {
+            onUseAppleMusicPlayerChange(false)
+        }
+    }
     val (showPlayerThumbnailShadow, onShowPlayerThumbnailShadowChange) = rememberPreference(
         ShowPlayerThumbnailShadowKey, defaultValue = false
     )
@@ -158,6 +163,18 @@ fun PlayerThemeScreen(
 
     var showStaticPicker by rememberSaveable { mutableStateOf(false) }
     var showGradientSheet by rememberSaveable { mutableStateOf(false) }
+
+    val onResetToDefault: () -> Unit = {
+        onBackgroundChange(PlayerBackgroundStyle.APPLE_MUSIC)
+        onArtworkStyleChange(PlayerArtworkStyle.CARD)
+        onSliderStyleChange(SliderStyle.DEFAULT)
+        onStaticColorChange(0xFF1A1A1A.toInt())
+        onGradientStopsChange("")
+        onGradientAngleChange(90f)
+        onUseAppleMusicPlayerChange(false)
+        onShowPlayerThumbnailShadowChange(false)
+        onShowUpNextChange(false)
+    }
 
     // Layout builder disabled for now — see the commented-out section below.
     // val (layoutOrderRaw, onLayoutOrderChange) = rememberPreference(PlayerLayoutOrderKey, defaultValue = "")
@@ -172,8 +189,6 @@ fun PlayerThemeScreen(
     // Apple Music draws its own square artwork treatment, so the shape presets
     // have nothing to act on while it is selected.
     val artworkLocked = background == PlayerBackgroundStyle.APPLE_MUSIC
-    // V17 uses its own thumbnail layout — VINYL and CLOVER don't apply.
-    val v17Active = useAppleMusicPlayer
 
     // Preview the song that is actually playing; fall back to the app icon.
     val playerConnection = LocalPlayerConnection.current
@@ -188,25 +203,29 @@ fun PlayerThemeScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         SectionTitle(stringResource(R.string.player_theme_artwork))
-        if (artworkLocked || v17Active) {
-            LockedNote(stringResource(if (v17Active) R.string.player_theme_artwork_locked_v17 else R.string.player_theme_artwork_locked))
+        if (artworkLocked) {
+            LockedNote(stringResource(R.string.player_theme_artwork_locked))
         }
         PresetRow {
             PlayerArtworkStyle.entries.forEach { style ->
-                val disabledByV17 = v17Active && style != PlayerArtworkStyle.CARD
                 PresetCard(
                     label = when (style) {
                         PlayerArtworkStyle.CARD -> stringResource(R.string.player_theme_card)
                         PlayerArtworkStyle.VINYL -> stringResource(R.string.player_theme_vinyl)
                         PlayerArtworkStyle.CLOVER -> stringResource(R.string.player_theme_clover)
                     },
-                    selected = artworkStyle == style,
-                    enabled = !artworkLocked && !disabledByV17,
-                    onClick = { onArtworkStyleChange(style) },
+                    selected = !artworkLocked && artworkStyle == style,
+                    enabled = true,
+                    onClick = {
+                        if (artworkLocked) {
+                            onBackgroundChange(PlayerBackgroundStyle.DEFAULT)
+                        }
+                        onArtworkStyleChange(style)
+                    },
                 ) {
                     PlayerPreview(
                         artworkStyle = style,
-                        background = background,
+                        background = if (artworkLocked) PlayerBackgroundStyle.DEFAULT else background,
                         sliderStyle = sliderStyle,
                         artworkUrl = artworkUrl,
                         staticColor = Color(staticColorInt),
@@ -218,15 +237,25 @@ fun PlayerThemeScreen(
         }
 
         SectionTitle(stringResource(R.string.player_background_style))
-        PresetRow {
-            PlayerBackgroundStyle.entries.filter {
+        val backgroundStyles = remember {
+            listOf(
+                PlayerBackgroundStyle.APPLE_MUSIC,
+                PlayerBackgroundStyle.DEFAULT,
+                PlayerBackgroundStyle.BLUR,
+                PlayerBackgroundStyle.GRADIENT,
+                PlayerBackgroundStyle.GLOW_ANIMATED,
+                PlayerBackgroundStyle.LIVE_MESH,
+                PlayerBackgroundStyle.STATIC,
+                PlayerBackgroundStyle.CUSTOM_GRADIENT,
+            ).filter {
                 it != PlayerBackgroundStyle.BLUR || Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-            }.forEach { style ->
-                val disabledByV17 = v17Active && style == PlayerBackgroundStyle.APPLE_MUSIC
+            }
+        }
+        PresetRow {
+            backgroundStyles.forEach { style ->
                 PresetCard(
                     label = backgroundLabel(style),
                     selected = background == style,
-                    enabled = !disabledByV17,
                     onClick = { onBackgroundChange(style) },
                 ) {
                     PlayerPreview(
@@ -242,42 +271,6 @@ fun PlayerThemeScreen(
             }
         }
 
-        SectionTitle(stringResource(R.string.apple_music_player_v17))
-        PresetRow {
-            PresetCard(
-                label = stringResource(R.string.apple_music_player_v17),
-                selected = useAppleMusicPlayer,
-                onClick = { onUseAppleMusicPlayerChange(!useAppleMusicPlayer) },
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    androidx.compose.foundation.Image(
-                        painter = painterResource(R.drawable.napster_logo),
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                    )
-                }
-            }
-        }
-        if (useAppleMusicPlayer) {
-            LockedNote(stringResource(R.string.apple_music_player_v17_description))
-            SwitchPreference(
-                title = { Text(stringResource(R.string.player_thumbnail_shadow)) },
-                checked = showPlayerThumbnailShadow,
-                onCheckedChange = onShowPlayerThumbnailShadowChange,
-            )
-            if (showPlayerThumbnailShadow) {
-                SliderPreference(
-                    title = { Text(stringResource(R.string.player_thumbnail_shadow_elevation)) },
-                    value = playerThumbnailShadowElevation,
-                    onValueChange = onPlayerThumbnailShadowElevationChange,
-                )
-            }
-        }
         SwitchPreference(
             title = { Text(stringResource(R.string.show_up_next)) },
             description = stringResource(R.string.show_up_next_desc),
@@ -360,7 +353,18 @@ fun PlayerThemeScreen(
         //         .height(480.dp),
         // )
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            TextButton(onClick = onResetToDefault) {
+                Text(stringResource(R.string.reset))
+            }
+        }
+        Spacer(Modifier.height(32.dp))
     }
 
     if (showStaticPicker) {
@@ -384,7 +388,7 @@ fun PlayerThemeScreen(
     }
 
     TopAppBar(
-            windowInsets = appTopBarWindowInsets(),
+        windowInsets = appTopBarWindowInsets(),
         title = { Text(stringResource(R.string.player_theme)) },
         navigationIcon = {
             AppIconButton(
@@ -392,6 +396,11 @@ fun PlayerThemeScreen(
                 onLongClick = navController::backToMain,
             ) {
                 Icon(painterResource(R.drawable.arrow_back), contentDescription = null)
+            }
+        },
+        actions = {
+            TextButton(onClick = onResetToDefault) {
+                Text(stringResource(R.string.reset))
             }
         },
         scrollBehavior = scrollBehavior,
@@ -544,11 +553,11 @@ private fun GradientPresetChip(label: String, onClick: () -> Unit) {
 
 @Composable
 private fun backgroundLabel(style: PlayerBackgroundStyle) = when (style) {
+    PlayerBackgroundStyle.APPLE_MUSIC -> stringResource(R.string.default_style)
     PlayerBackgroundStyle.DEFAULT -> stringResource(R.string.follow_theme)
-    PlayerBackgroundStyle.GRADIENT -> stringResource(R.string.gradient)
     PlayerBackgroundStyle.BLUR -> stringResource(R.string.player_background_blur)
+    PlayerBackgroundStyle.GRADIENT -> stringResource(R.string.gradient)
     PlayerBackgroundStyle.GLOW_ANIMATED -> stringResource(R.string.glow_animated)
-    PlayerBackgroundStyle.APPLE_MUSIC -> stringResource(R.string.apple_music)
     PlayerBackgroundStyle.LIVE_MESH -> stringResource(R.string.live_mesh)
     PlayerBackgroundStyle.STATIC -> stringResource(R.string.player_theme_static)
     PlayerBackgroundStyle.CUSTOM_GRADIENT -> stringResource(R.string.player_theme_custom_gradient)
@@ -680,8 +689,8 @@ private fun SlotPreviewBlock(slot: PlayerSlot, artworkUrl: String?) {
                     model = artworkUrl,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    fallback = painterResource(R.drawable.napster_logo),
-                    error = painterResource(R.drawable.napster_logo),
+                    fallback = painterResource(R.drawable.icon),
+                    error = painterResource(R.drawable.icon),
                     modifier = Modifier.fillMaxSize(),
                 )
             }
@@ -817,6 +826,7 @@ private fun PlayerPreview(
         PlayerBackgroundStyle.LIVE_MESH ->
             Brush.linearGradient(listOf(accent, Color.Black, accent.copy(alpha = 0.4f)))
         PlayerBackgroundStyle.GLOW_ANIMATED -> Brush.radialGradient(listOf(accent, Color.Black))
+        PlayerBackgroundStyle.APPLE_MUSIC -> Brush.verticalGradient(listOf(Color(0xFF262626), Color.Black))
         else -> Brush.verticalGradient(listOf(accent.copy(alpha = 0.55f), Color.Black))
     }
     val onBackdrop = if (background == PlayerBackgroundStyle.DEFAULT) {
@@ -858,8 +868,8 @@ private fun PlayerPreview(
                 model = artworkUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                fallback = painterResource(R.drawable.napster_logo),
-                error = painterResource(R.drawable.napster_logo),
+                fallback = painterResource(R.drawable.icon),
+                error = painterResource(R.drawable.icon),
                 modifier = Modifier.fillMaxSize(),
             )
             if (previewShape == CircleShape && artworkStyle == PlayerArtworkStyle.VINYL) {

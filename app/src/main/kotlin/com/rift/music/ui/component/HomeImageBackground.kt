@@ -108,7 +108,7 @@ fun hasCustomHomeBackground(): Boolean {
 @Composable
 fun rememberAppBackgroundColor(fallback: Color): Color {
     val (colorInt) = rememberPreference(AppBackgroundColorKey, 0)
-    return if (colorInt != 0) Color(colorInt) else rememberAppBackgroundTint(fallback)
+    return if (colorInt != 0) Color(colorInt) else fallback
 }
 
 /**

@@ -37,8 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rift.music.ui.theme.AppleTokens
 
-private val SettingsSectionTitleColor = Color(0xFFFF4D68)
-private val SettingsIconTint = Color(0xFFFF4D68)
+private val SettingsSectionTitleColor = Color(0xFF5B9DFF)
+private val SettingsIconTint = Color(0xFF5B9DFF)
 private val SettingsIconBg = Color(0xFF2E1216)
 private val SettingsSubtitleColor = Color(0xFF9EACB9)
 private val SettingsDividerColor = Color(0xFF252932)

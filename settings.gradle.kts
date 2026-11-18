@@ -1,3 +1,8 @@
+/**
+ * Abyss (C) 2026
+ * Licensed under GPL-3.0 | See git history for contributors
+ */
+
 pluginManagement {
     repositories {
         google()
@@ -24,7 +29,7 @@ dependencyResolutionManagement {
 //     id("org.gradle.toolchains.foojay-resolver-convention") version("1.0.0")
 // }
 
-rootProject.name = "napster"
+rootProject.name = "Abyss"
 include(":app")
 include(":canvas")
 include(":innertube")

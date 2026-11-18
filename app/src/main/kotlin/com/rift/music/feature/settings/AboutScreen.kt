@@ -149,7 +149,7 @@ fun AboutScreen(
             }
 
             Text(
-                text = "Rift",
+                text = "Abyss",
                 style = MaterialTheme.typography.displaySmall.copy(
                     fontFamily = rememberBrandFontFamily(),
                     fontWeight = FontWeight.Bold,
@@ -199,13 +199,13 @@ fun AboutScreen(
         ) {
             Column(modifier = Modifier.padding(18.dp)) {
                 Text(
-                    text = "About Rift",
+                    text = "About Abyss",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Rift is a free and open-source music player for Android featuring YouTube Music streaming, Liquid Glass interface, time-synced lyrics, offline downloads, queue management, and public Spotify & YouTube Music playlist import.",
+                    text = "Abyss is a free and open-source music player for Android featuring YouTube Music streaming, Liquid Glass interface, time-synced lyrics, offline downloads, queue management, and public Spotify & YouTube Music playlist import.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 20.sp
@@ -221,7 +221,7 @@ fun AboutScreen(
                     icon = painterResource(R.drawable.license_vivi),
                     title = { Text("Open Source Project") },
                     description = { Text("Free open-source software licensed under GPL-3.0.") },
-                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/slythnox/Rift/blob/main/LICENSE") }
+                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/slythnox/Abyss/blob/main/LICENSE") }
                 ),
                 Material3SettingsItem(
                     icon = painterResource(R.drawable.link),
@@ -240,7 +240,7 @@ fun AboutScreen(
                     icon = painterResource(R.drawable.github),
                     title = { Text(stringResource(R.string.github_repository)) },
                     description = { Text(stringResource(R.string.view_source_code)) },
-                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/slythnox/Rift") }
+                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/slythnox/Abyss") }
                 )
             )
         )
@@ -270,7 +270,7 @@ fun AboutScreen(
                     icon = painterResource(R.drawable.license_vivi),
                     title = { Text(stringResource(R.string.license)) },
                     description = { Text("GPL-3.0 • Free Open Source Software") },
-                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/slythnox/Rift/blob/main/LICENSE") }
+                    onClick = { uriHandler.safeOpenUri(context, "https://github.com/slythnox/Abyss/blob/main/LICENSE") }
                 ),
             )
         )

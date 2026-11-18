@@ -262,12 +262,15 @@ object YTPlayerUtils {
         // request that never needed it in the first place.
         var signatureTimestampValue: Int? = null
         var signatureTimestampFetched = false
+        var newPipeDetectedAgeRestricted = false
         suspend fun signatureTimestampFor(client: YouTubeClient): Int? {
             if (!client.useSignatureTimestamp) return null
             if (!signatureTimestampFetched) {
-                signatureTimestampValue = getSignatureTimestampOrNull(videoId).timestamp
+                val sigResult = getSignatureTimestampOrNull(videoId)
+                signatureTimestampValue = sigResult.timestamp
+                newPipeDetectedAgeRestricted = sigResult.isAgeRestricted
                 signatureTimestampFetched = true
-                Timber.tag(logTag).d("Signature timestamp obtained lazily: $signatureTimestampValue")
+                Timber.tag(logTag).d("Signature timestamp obtained lazily: $signatureTimestampValue (ageRestricted=$newPipeDetectedAgeRestricted)")
             }
             return signatureTimestampValue
         }
@@ -338,27 +341,37 @@ object YTPlayerUtils {
         val wasOriginallyAgeRestricted: Boolean
 
         // Check if MAIN_CLIENT response indicates age-restricted.
-        // NOTE: Do NOT include LOGIN_REQUIRED here — ANDROID_VR returns LOGIN_REQUIRED as a
-        // bot-detection / client-not-supported signal, NOT a content age gate. Treating it as
-        // age-restricted incorrectly reroutes every bot-flagged request through WEB_CREATOR
-        // and causes streaming failures for logged-in users.
         val mainStatus = mainPlayerResponse.playabilityStatus.status
+        val mainReason = mainPlayerResponse.playabilityStatus.reason.orEmpty()
         val isAgeRestrictedFromResponse = mainStatus in listOf(
             "AGE_CHECK_REQUIRED",
             "AGE_VERIFICATION_REQUIRED",
             "CONTENT_CHECK_REQUIRED"
-        )
+        ) || (mainStatus == "LOGIN_REQUIRED" && (
+            mainReason.contains("age", ignoreCase = true) ||
+            mainReason.contains("inappropriate", ignoreCase = true) ||
+            mainReason.contains("mature", ignoreCase = true)
+        )) || newPipeDetectedAgeRestricted
         wasOriginallyAgeRestricted = isAgeRestrictedFromResponse
 
-        if (isAgeRestrictedFromResponse && isLoggedIn) {
-            // Age-restricted: use WEB_CREATOR directly (no NewPipe needed from here)
-            Timber.tag(logTag).d("Age-restricted detected, using WEB_CREATOR")
-            Timber.tag(TAG).i("Age-restricted: using WEB_CREATOR for videoId=$videoId")
-            val creatorResponse = YouTube.player(videoId, playlistId, WEB_CREATOR, null, null).getOrNull()
-            if (creatorResponse?.playabilityStatus?.status == "OK") {
-                Timber.tag(logTag).d("WEB_CREATOR works for age-restricted content")
-                mainPlayerResponse = creatorResponse
-                usedAgeRestrictedClient = WEB_CREATOR
+        if (isAgeRestrictedFromResponse) {
+            Timber.tag(logTag).d("Age-restricted detected for videoId=$videoId (isLoggedIn=$isLoggedIn)")
+            Timber.tag(TAG).i("Age-restricted: attempting bypass for videoId=$videoId")
+            if (isLoggedIn) {
+                val creatorResponse = YouTube.player(videoId, playlistId, ANDROID_CREATOR, null, null).getOrNull()
+                    ?: YouTube.player(videoId, playlistId, WEB_CREATOR, null, null).getOrNull()
+                if (creatorResponse?.playabilityStatus?.status == "OK") {
+                    Timber.tag(logTag).d("Creator client works for age-restricted content")
+                    mainPlayerResponse = creatorResponse
+                    usedAgeRestrictedClient = ANDROID_CREATOR
+                }
+            } else {
+                val embeddedResponse = YouTube.player(videoId, playlistId, TVHTML5_SIMPLY_EMBEDDED_PLAYER, null, null).getOrNull()
+                if (embeddedResponse?.playabilityStatus?.status == "OK") {
+                    Timber.tag(logTag).d("TVHTML5_SIMPLY_EMBEDDED_PLAYER works for age-restricted content")
+                    mainPlayerResponse = embeddedResponse
+                    usedAgeRestrictedClient = TVHTML5_SIMPLY_EMBEDDED_PLAYER
+                }
             }
         }
 
@@ -380,11 +393,16 @@ object YTPlayerUtils {
 
         // Check current status
         val currentStatus = mainPlayerResponse.playabilityStatus.status
+        val currentReason = mainPlayerResponse.playabilityStatus.reason.orEmpty()
         var isAgeRestricted = currentStatus in listOf(
             "AGE_CHECK_REQUIRED",
             "AGE_VERIFICATION_REQUIRED",
             "CONTENT_CHECK_REQUIRED"
-        )
+        ) || (currentStatus == "LOGIN_REQUIRED" && (
+            currentReason.contains("age", ignoreCase = true) ||
+            currentReason.contains("inappropriate", ignoreCase = true) ||
+            currentReason.contains("mature", ignoreCase = true)
+        )) || newPipeDetectedAgeRestricted
 
         if (isAgeRestricted) {
             Timber.tag(logTag).d("Content is still age-restricted (status: $currentStatus), will try fallback clients")
@@ -396,16 +414,11 @@ object YTPlayerUtils {
 
         // Where to enter the fallback chain.
         //   private track   -> skip to TVHTML5, which is the one that serves uploads
-        //   age-restricted  -> skip MAIN_CLIENT, start at the top of the fallbacks
+        //   age-restricted  -> skip directly to TVHTML5_SIMPLY_EMBEDDED_PLAYER / ANDROID_CREATOR
         //   otherwise       -> -1, meaning try MAIN_CLIENT's own streams first
-        //
-        // Resolved by identity, not by a literal index. The comment here used to say
-        // "index 1 = TVHTML5" while index 1 was actually WEB_REMIX -- the array had been
-        // reordered and the magic number silently stopped meaning what it claimed. Any
-        // future reordering now moves this with it.
         val startIndex = when {
             isPrivateTrack -> STREAM_FALLBACK_CLIENTS.indexOf(TVHTML5).coerceAtLeast(0)
-            isAgeRestricted -> 0
+            isAgeRestricted -> STREAM_FALLBACK_CLIENTS.indexOf(TVHTML5_SIMPLY_EMBEDDED_PLAYER).coerceAtLeast(0)
             else -> -1
         }
 

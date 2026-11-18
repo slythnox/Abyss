@@ -36,7 +36,7 @@ plugins {
 }
 
 base {
-    archivesName.set("RIFT")
+    archivesName.set("Abyss")
 }
 
 android {

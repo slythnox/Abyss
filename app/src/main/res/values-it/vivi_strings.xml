@@ -599,8 +599,8 @@
     <string name="login_successful">Accesso eseguito con successo!</string>
     <string name="prevent_duplicate_tracks_in_queue">Previeni tracce duplicate in coda</string>
     <string name="prevent_duplicate_tracks_in_queue_desc">Quando una traccia viene aggiunta nella coda, rimuovila dalle posizioni precedenti se è già presente</string>
-    Competendo su Rift
-    Guardando video su Rift
+    Competendo su Abyss
+    Guardando video su Abyss
     Riproducendo musica su 
     <string name="player_background_solid">Solido</string>
     <string name="resume_on_bluetooth_connect">Riprendi con la connessione via Bluetooth</string>

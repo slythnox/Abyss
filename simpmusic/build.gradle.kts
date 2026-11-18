@@ -1,3 +1,8 @@
+/**
+ * Abyss (C) 2026
+ * Licensed under GPL-3.0 | See git history for contributors
+ */
+
 plugins {
     id("com.android.library")
     alias(libs.plugins.kotlin.serialization)

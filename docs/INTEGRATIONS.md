@@ -1,6 +1,6 @@
 # Integrations Architecture
 
-This document describes all verified optional third-party integrations in Rift, including modular HTTP add-ons, scrobbling protocols, alternative stream resolution, canvas providers, lyrics engines, and release distribution.
+This document describes all verified optional third-party integrations in Abyss, including modular HTTP add-ons, scrobbling protocols, alternative stream resolution, canvas providers, lyrics engines, and release distribution.
 
 ---
 
@@ -15,7 +15,7 @@ All integrations are strictly optional augmentations to the core streaming exper
 
 ## 2. Modular HTTP Streaming Add-ons (`AddonClient.kt`, `AddonSource.kt`)
 
-Rift supports an open JSON streaming protocol allowing users to connect modular HTTP streaming add-on servers:
+Abyss supports an open JSON streaming protocol allowing users to connect modular HTTP streaming add-on servers:
 - **Specification:** Servers declare capabilities via `/manifest.json` (`search`, `stream`, quality tiers `LOSSLESS`, `HIGH`, `LOW`).
 - **In-Flight Deduplication (`SharedCalls.kt`):** Concurrent queries for the same query string are coalesced into a single network call.
 - **Rate-Limiting Compliance:** Fully parses HTTP 429 and `Retry-After` headers, enforcing client-side cooldowns without server flooding.
@@ -73,5 +73,5 @@ The player UI supports dynamic background video loops and canvas animations:
 
 ## 7. Release Distribution
 
-- **GitHub Releases:** Official releases and APK artifacts are distributed via `github.com/slythnox/Rift/releases`.
+- **GitHub Releases:** Official releases and APK artifacts are distributed via `github.com/slythnox/Abyss/releases`.
 - **Packaging:** Builds are produced as signed APKs via automated GitHub Actions CI workflows. In-app self-updating was removed in favour of standard platform installation and package managers (F-Droid / Obtainium / direct APK).

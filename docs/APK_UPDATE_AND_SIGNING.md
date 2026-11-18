@@ -1,12 +1,12 @@
 # APK Update, Signing & Release Engineering
 
-This document outlines the release signing architecture, certificate verification protocols, keystore security procedures, and safe in-place APK update workflows for **Rift** (formerly Napster, `com.napster.music`).
+This document outlines the release signing architecture, certificate verification protocols, keystore security procedures, and safe in-place APK update workflows for **Abyss** (formerly Napster, `com.napster.music`).
 
 ---
 
 ## 1. Architectural Principles & Compatibility Invariants
 
-Because Rift is distributed directly via GitHub Releases and F-Droid rather than Google Play, the Android OS Package Manager (`PackageManager`) enforces signature and version constraints directly on the user's device during updates.
+Because Abyss is distributed directly via GitHub Releases and F-Droid rather than Google Play, the Android OS Package Manager (`PackageManager`) enforces signature and version constraints directly on the user's device during updates.
 
 For an existing user to install an update without data loss or installation failures (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`), three strict conditions must be satisfied:
 
@@ -38,7 +38,7 @@ For an existing user to install an update without data loss or installation fail
 
 ## 2. Monotonic Versioning Protocol
 
-Rift maintains a single source of truth for application versions in [`version.properties`](../version.properties):
+Abyss maintains a single source of truth for application versions in [`version.properties`](../version.properties):
 
 ```properties
 VERSION_MAJOR=1
@@ -185,15 +185,15 @@ When an APK update satisfies the cryptographic and version requirements above, t
 > This section is an architectural RFC and design evaluation. In accordance with release stability and security best practices, automatic APK downloading/updating is not currently enabled in the binary.
 
 ### Overview
-Because Rift does not rely on Google Play, users currently check GitHub Releases manually. A future in-app update checker can notify users of new releases and facilitate verified APK downloads.
+Because Abyss does not rely on Google Play, users currently check GitHub Releases manually. A future in-app update checker can notify users of new releases and facilitate verified APK downloads.
 
 ### Recommended System Architecture
 
 ```
 ┌─────────────────────────────────┐
-│     Rift Client App             │
+│     Abyss Client App             │
 └──────────────┬──────────────────┘
-               │ 1. GET /repos/slythnox/Rift/releases/latest
+               │ 1. GET /repos/slythnox/Abyss/releases/latest
                ▼
 ┌─────────────────────────────────┐
 │     GitHub REST API             │
@@ -228,7 +228,7 @@ Because Rift does not rely on Google Play, users currently check GitHub Releases
    - Check only on explicit user request or at most once every 24 hours on Wi-Fi.
 
 2. **Architecture-Aware Asset Matching:**
-   - Rift builds both architecture-specific APKs (`arm64-v8a`, `armeabi-v7a`, `x86_64`) and `universal` APKs.
+   - Abyss builds both architecture-specific APKs (`arm64-v8a`, `armeabi-v7a`, `x86_64`) and `universal` APKs.
    - The client must inspect `android.os.Build.SUPPORTED_ABIS` and select the optimal APK asset rather than downloading a heavy universal build.
 
 3. **Cryptographic Integrity Verification:**

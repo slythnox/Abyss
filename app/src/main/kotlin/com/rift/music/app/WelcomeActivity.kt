@@ -34,9 +34,15 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
@@ -293,7 +299,7 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
-                        text = stringResource(com.rift.music.R.string.app_name).uppercase(),
+                        text = stringResource(com.rift.music.R.string.app_name),
                         fontFamily = GoogleSansFlex,
                         fontWeight = FontWeight.Bold,
                         fontSize = 48.sp,
@@ -783,38 +789,111 @@ fun WelcomePagerScreen(onFinished: () -> Unit) {
 
 @Composable
 fun RotatingShapeContainer(modifier: Modifier = Modifier) {
-    val infiniteTransition = rememberInfiniteTransition(label = "shapeRotation")
-    val rotation by infiniteTransition.animateFloat(
+    val infiniteTransition = rememberInfiniteTransition(label = "heroEmblemAnim")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 0.96f,
+        targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseScale"
+    )
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 0.65f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
+    val ringRotation by infiniteTransition.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(20000, easing = LinearEasing),
+            animation = tween(16000, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         ),
-        label = "rotation"
+        label = "ringRotation"
     )
-
-    val badgeColor = Color(0xFF255DCE)
 
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        Icon(
-            painter = painterResource(id = com.rift.music.R.drawable.ic_ten_sided_cookie),
-            contentDescription = null,
-            tint = badgeColor,
+        // Atmospheric cosmic bloom aura
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .rotate(rotation)
+                .size(240.dp)
+                .graphicsLayer {
+                    scaleX = pulseScale
+                    scaleY = pulseScale
+                    alpha = pulseAlpha
+                }
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFF007AFF).copy(alpha = 0.45f),
+                            Color(0xFFA855F7).copy(alpha = 0.20f),
+                            Color.Transparent
+                        )
+                    ),
+                    shape = CircleShape
+                )
         )
 
-        Icon(
-            painter = painterResource(com.rift.music.R.drawable.icon),
-            contentDescription = "Rift",
-            modifier = Modifier.size(150.dp),
-            tint = Color.Unspecified
+        // Orbital celestial accent ring
+        Box(
+            modifier = Modifier
+                .size(208.dp)
+                .rotate(ringRotation)
+                .border(
+                    width = 2.dp,
+                    brush = Brush.sweepGradient(
+                        listOf(
+                            Color(0xFF007AFF),
+                            Color(0xFFA855F7).copy(alpha = 0.3f),
+                            Color(0xFF38BDF8),
+                            Color(0xFF007AFF)
+                        )
+                    ),
+                    shape = CircleShape
+                )
         )
+
+        // Central sculpted Abyss emblem
+        Surface(
+            modifier = Modifier
+                .size(176.dp)
+                .shadow(
+                    elevation = 20.dp,
+                    shape = CircleShape,
+                    ambientColor = Color(0xFF007AFF),
+                    spotColor = Color(0xFFA855F7)
+                ),
+            shape = CircleShape,
+            color = Color.Black,
+            border = BorderStroke(
+                width = 1.5.dp,
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = 0.4f),
+                        Color(0xFF007AFF).copy(alpha = 0.7f),
+                        Color(0xFFA855F7).copy(alpha = 0.4f)
+                    )
+                )
+            )
+        ) {
+            Image(
+                painter = painterResource(com.rift.music.R.drawable.icon),
+                contentDescription = "Abyss",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        }
     }
 }
 
