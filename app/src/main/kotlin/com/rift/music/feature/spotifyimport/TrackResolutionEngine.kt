@@ -35,7 +35,25 @@ class DeterministicTrackResolutionEngine(
     private val searchClient: YouTubeSearchClient<YouTubeCandidate>,
 ) : TrackResolutionEngine<YouTubeCandidate> {
     override suspend fun resolve(track: SourceTrackMetadata): YouTubeCandidate? {
-        val candidates = searchClient.search(buildQuery(track))
+        // Pass 1: artist + title + album
+        var candidates = searchClient.search(buildQuery(track))
+
+        // Pass 2: if no results and album was present, try without album
+        if (candidates.isEmpty() && !track.album.isNullOrBlank()) {
+            val simpleQuery = "${track.artist} ${track.title}".trim()
+            if (simpleQuery.isNotBlank()) {
+                candidates = searchClient.search(simpleQuery)
+            }
+        }
+
+        // Pass 3: if still no results, try with sanitized title
+        if (candidates.isEmpty()) {
+            val cleanTitle = stripFluff(track.title)
+            if (cleanTitle.isNotBlank() && cleanTitle != track.title) {
+                candidates = searchClient.search("${track.artist} $cleanTitle".trim())
+            }
+        }
+
         if (candidates.isEmpty()) return null
 
         // Keep the importer from silently selecting an obviously unrelated result.
@@ -46,6 +64,11 @@ class DeterministicTrackResolutionEngine(
             .sortedByDescending { score(track, it) }
         return ranked.firstOrNull()?.takeIf { score(track, it) >= MIN_ACCEPTABLE_SCORE }
     }
+
+    private fun stripFluff(value: String): String = value
+        .replace(Regex("""\s*-\s*(?:remaster(?:ed)?(?:\s*\d{4})?|live|radio edit|mono|stereo|bonus track|deluxe|anniversary).*""", RegexOption.IGNORE_CASE), "")
+        .replace(Regex("""\s*[\(\[](?:feat\.|featuring|with|remastered|live|deluxe|bonus|anniversary|radio edit|official).*?[\)\]]""", RegexOption.IGNORE_CASE), "")
+        .trim()
 
     private fun buildQuery(track: SourceTrackMetadata): String =
         listOf(track.artist, track.title, track.album.orEmpty())

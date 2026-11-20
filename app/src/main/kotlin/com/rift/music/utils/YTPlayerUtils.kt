@@ -357,7 +357,14 @@ object YTPlayerUtils {
         if (isAgeRestrictedFromResponse) {
             Timber.tag(logTag).d("Age-restricted detected for videoId=$videoId (isLoggedIn=$isLoggedIn)")
             Timber.tag(TAG).i("Age-restricted: attempting bypass for videoId=$videoId")
-            if (isLoggedIn) {
+
+            // Try IOS first (highest success rate and direct playable URLs for age-restricted content without login)
+            val iosResponse = YouTube.player(videoId, playlistId, IOS, null, null).getOrNull()
+            if (iosResponse?.playabilityStatus?.status == "OK") {
+                Timber.tag(logTag).d("IOS client successfully bypassed age-restricted content")
+                mainPlayerResponse = iosResponse
+                usedAgeRestrictedClient = IOS
+            } else if (isLoggedIn) {
                 val creatorResponse = YouTube.player(videoId, playlistId, ANDROID_CREATOR, null, null).getOrNull()
                     ?: YouTube.player(videoId, playlistId, WEB_CREATOR, null, null).getOrNull()
                 if (creatorResponse?.playabilityStatus?.status == "OK") {
@@ -366,11 +373,18 @@ object YTPlayerUtils {
                     usedAgeRestrictedClient = ANDROID_CREATOR
                 }
             } else {
-                val embeddedResponse = YouTube.player(videoId, playlistId, TVHTML5_SIMPLY_EMBEDDED_PLAYER, null, null).getOrNull()
-                if (embeddedResponse?.playabilityStatus?.status == "OK") {
-                    Timber.tag(logTag).d("TVHTML5_SIMPLY_EMBEDDED_PLAYER works for age-restricted content")
-                    mainPlayerResponse = embeddedResponse
-                    usedAgeRestrictedClient = TVHTML5_SIMPLY_EMBEDDED_PLAYER
+                val creatorResponse = YouTube.player(videoId, playlistId, ANDROID_CREATOR, null, null).getOrNull()
+                if (creatorResponse?.playabilityStatus?.status == "OK") {
+                    Timber.tag(logTag).d("ANDROID_CREATOR client works for age-restricted content")
+                    mainPlayerResponse = creatorResponse
+                    usedAgeRestrictedClient = ANDROID_CREATOR
+                } else {
+                    val embeddedResponse = YouTube.player(videoId, playlistId, TVHTML5_SIMPLY_EMBEDDED_PLAYER, null, null).getOrNull()
+                    if (embeddedResponse?.playabilityStatus?.status == "OK") {
+                        Timber.tag(logTag).d("TVHTML5_SIMPLY_EMBEDDED_PLAYER works for age-restricted content")
+                        mainPlayerResponse = embeddedResponse
+                        usedAgeRestrictedClient = TVHTML5_SIMPLY_EMBEDDED_PLAYER
+                    }
                 }
             }
         }
@@ -418,7 +432,7 @@ object YTPlayerUtils {
         //   otherwise       -> -1, meaning try MAIN_CLIENT's own streams first
         val startIndex = when {
             isPrivateTrack -> STREAM_FALLBACK_CLIENTS.indexOf(TVHTML5).coerceAtLeast(0)
-            isAgeRestricted -> STREAM_FALLBACK_CLIENTS.indexOf(TVHTML5_SIMPLY_EMBEDDED_PLAYER).coerceAtLeast(0)
+            isAgeRestricted -> STREAM_FALLBACK_CLIENTS.indexOf(IOS).coerceAtLeast(0)
             else -> -1
         }
 
@@ -812,17 +826,17 @@ object YTPlayerUtils {
             Timber.tag(logTag).d("Custom cipher deobfuscation failed")
         }
 
-        // Skip NewPipe for age-restricted content
-        if (skipNewPipe) {
-            Timber.tag(logTag).d("Skipping NewPipe methods for age-restricted content")
-            return null
-        }
-
         // Try to get URL using NewPipeExtractor signature deobfuscation
         val deobfuscatedUrl = NewPipeExtractor.getStreamUrl(format, videoId)
         if (deobfuscatedUrl != null) {
             Timber.tag(logTag).d("Stream URL obtained via NewPipe deobfuscation")
             return deobfuscatedUrl
+        }
+
+        // Skip NewPipe StreamInfo scraping for age-restricted content
+        if (skipNewPipe) {
+            Timber.tag(logTag).d("Skipping NewPipe StreamInfo scraping for age-restricted content")
+            return null
         }
 
         // Fallback: try to get URL from StreamInfo

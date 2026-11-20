@@ -129,6 +129,9 @@ class SpotifyPlaylistImporter(
                         isEditable = true,
                     )
                 )
+            } else if (!isResuming) {
+                // If starting fresh on an existing playlist, clear old playlist songs to prevent stale duplicates
+                database.clearPlaylist(dbPlaylistId)
             }
 
             val semaphore = Semaphore(3)
@@ -213,16 +216,9 @@ class SpotifyPlaylistImporter(
 
                 var batchImported = 0
                 var batchFailed = 0
-
                 val newNextOffset = batch.offset + batch.tracks.size
                 val isLastBatch = batch.isLast || (totalTracks > 0 && newNextOffset >= totalTracks)
-
-                val nextStatus = when {
-                    isLastBatch && (importedCount + batchImported) == 0 && preparedTracks.isEmpty() -> SpotifyImportStatus.FAILED
-                    isLastBatch && (failedCount + batchFailed) > 0 -> SpotifyImportStatus.COMPLETED_WITH_ERRORS
-                    isLastBatch -> SpotifyImportStatus.COMPLETED
-                    else -> SpotifyImportStatus.PROCESSING
-                }
+                var nextStatus = SpotifyImportStatus.PROCESSING
 
                 // Step 2: Commit tracks AND checkpoint in a single atomic Room transaction
                 database.withTransaction {
@@ -247,12 +243,12 @@ class SpotifyPlaylistImporter(
 
                     for ((songEntity, artists, album) in preparedTracks) {
                         try {
-                            // 1. Album (if present)
-                            if (album != null && album.id.isNotBlank()) {
-                                val albumId = "spotify:${album.id}"
+                            // 1. Album (if present, insert first so AlbumEntity exists)
+                            val albumId = if (album != null && album.id.isNotBlank()) {
+                                val aId = "spotify:${album.id}"
                                 insert(
                                     AlbumEntity(
-                                        id = albumId,
+                                        id = aId,
                                         title = album.name,
                                         thumbnailUrl = album.images.firstOrNull()?.url ?: batch.coverUrl,
                                         songCount = 0,
@@ -260,7 +256,28 @@ class SpotifyPlaylistImporter(
                                         lastUpdateTime = now,
                                     )
                                 )
+                                aId
+                            } else null
+
+                            // 2. Artists (insert first so ArtistEntities exist)
+                            val artistIds = artists.mapIndexed { aIndex, artist ->
+                                val aId = artist.id?.takeIf { it.isNotBlank() }?.let { "spotify:$it" } ?: ArtistEntity.generateArtistId()
                                 insert(
+                                    ArtistEntity(
+                                        id = aId,
+                                        name = artist.name,
+                                    )
+                                )
+                                Pair(aId, aIndex)
+                            }
+
+                            // 3. SongEntity: MUST be inserted BEFORE SongAlbumMap, SongArtistMap, and PlaylistSongMap
+                            // to satisfy SQLite foreign key constraints (code 787).
+                            upsert(songEntity)
+
+                            // 4. SongAlbumMap: both SongEntity and AlbumEntity exist
+                            if (albumId != null) {
+                                upsert(
                                     SongAlbumMap(
                                         songId = songEntity.id,
                                         albumId = albumId,
@@ -269,15 +286,8 @@ class SpotifyPlaylistImporter(
                                 )
                             }
 
-                            // 2. Artists
-                            artists.forEachIndexed { aIndex, artist ->
-                                val aId = artist.id?.takeIf { it.isNotBlank() }?.let { "spotify:$it" } ?: ArtistEntity.generateArtistId()
-                                insert(
-                                    ArtistEntity(
-                                        id = aId,
-                                        name = artist.name,
-                                    )
-                                )
+                            // 5. SongArtistMap: both SongEntity and ArtistEntities exist
+                            artistIds.forEach { (aId, aIndex) ->
                                 insert(
                                     SongArtistMap(
                                         songId = songEntity.id,
@@ -287,10 +297,7 @@ class SpotifyPlaylistImporter(
                                 )
                             }
 
-                            // 3. SongEntity
-                            insert(songEntity)
-
-                            // 4. PlaylistSongMap
+                            // 6. PlaylistSongMap: both PlaylistEntity and SongEntity exist
                             insert(
                                 PlaylistSongMap(
                                     playlistId = dbPlaylistId,
@@ -307,6 +314,16 @@ class SpotifyPlaylistImporter(
                         }
                     }
 
+                    val cumulativeImported = importedCount + batchImported
+                    val cumulativeFailed = failedCount + batchFailed
+
+                    nextStatus = when {
+                        isLastBatch && cumulativeImported == 0 && preparedTracks.isEmpty() -> SpotifyImportStatus.FAILED
+                        isLastBatch && cumulativeFailed > 0 -> SpotifyImportStatus.COMPLETED_WITH_ERRORS
+                        isLastBatch -> SpotifyImportStatus.COMPLETED
+                        else -> SpotifyImportStatus.PROCESSING
+                    }
+
                     val updatedCheckpoint = SpotifyImportCheckpoint(
                         importId = playlistId,
                         playlistUrl = link,
@@ -315,9 +332,9 @@ class SpotifyPlaylistImporter(
                         totalTracks = totalTracks,
                         nextOffset = newNextOffset,
                         lastBatchIndex = batchIndex++,
-                        importedCount = importedCount + batchImported,
+                        importedCount = cumulativeImported,
                         skippedCount = skippedCount,
-                        failedCount = failedCount + batchFailed,
+                        failedCount = cumulativeFailed,
                         status = nextStatus,
                         isCancelled = false,
                         timestampMs = System.currentTimeMillis(),

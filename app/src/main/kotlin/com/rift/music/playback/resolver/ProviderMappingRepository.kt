@@ -182,6 +182,25 @@ class ProviderMappingRepository @Inject constructor(
             mapping
         } else {
             Timber.tag(TAG).w("Failed to resolve acceptable match for \"$title\" by \"$artist\"")
+            val cleanId = if (sourceId.startsWith("spotify:")) sourceId else "spotify:$sourceId"
+            database.updateSongMatch(
+                songId = cleanId,
+                matchedVideoId = "",
+                confidence = 0f,
+                status = "FAILED",
+                isEnriched = true,
+                updatedAt = System.currentTimeMillis(),
+            )
+            val failedMapping = ProviderMappingEntity(
+                sourceId = sourceId,
+                sourceProvider = sourceProvider,
+                providerTrackId = "",
+                provider = provider,
+                confidence = 0f,
+                matchStatus = "FAILED",
+                verifiedAt = System.currentTimeMillis(),
+            )
+            database.insert(failedMapping)
             PlaybackDiagnostics.record(
                 eventType = PlaybackEventType.PROVIDER_SELECTION,
                 mediaId = sourceId,

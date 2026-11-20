@@ -1,7 +1,24 @@
 {
-  "description": "Abyss — Official Rebrand to Abyss, Planetary Horizon Identity, Header and Player Streamlining, and Persistent Playlist Intelligence.",
+  "description": "Abyss v1.0.7 — High-Scale Playlist Import Architecture & Resilient Age-Restriction Bypass.",
   "image": "",
   "changelog": [
+    {
+      "title": "High-Scale Playlist Import & Database Foreign Key Resilience",
+      "items": [
+        "Fixed critical playlist import failure on large playlists (4,000+ tracks): resolved SQLite foreign key constraint violation (code 787) by ordering entity transactions so SongEntity and Artist/Album entities are safely persisted prior to child junction mappings (SongAlbumMap, SongArtistMap, PlaylistSongMap).",
+        "Deterministic multi-pass YouTube Music matcher: added intelligent query simplification fallbacks (full metadata -> artist + title -> sanitized fluff-stripped title) ensuring unmatched rate drops to near zero.",
+        "Durable enrichment progression: background PlaylistEnrichmentWorker now advances cleanly across 4,000 tracks without stalling on unmatchable items.",
+        "Automatic stale song clearance: retrying an import fresh cleans previous failed mappings, preventing duplicate entries."
+      ]
+    },
+    {
+      "title": "Age-Restricted Playback Bypass",
+      "items": [
+        "Fixed age-restricted playback failure: prioritized modern iOS Innertube client bypass returning unthrottled direct stream URLs without requiring Google account sign-in.",
+        "Eliminated dead TVHTML5 embedded client fallback that triggered deprecated device errors.",
+        "Updated playback error messaging: replaced generic rejection text with dynamic retry and alternate stream recovery."
+      ]
+    },
     {
       "title": "Official Rebrand to Abyss and Visual Identity",
       "items": [

@@ -2113,7 +2113,7 @@ interface DatabaseDao {
 
     // Playlist Intelligence & Enrichment Queries
     @Transaction
-    @Query("SELECT song.* FROM playlist_song_map JOIN song ON playlist_song_map.songId = song.id WHERE playlistId = :playlistId AND (song.matchedVideoId IS NULL OR song.matchedVideoId = '' OR song.isEnriched = 0) ORDER BY position LIMIT :limit")
+    @Query("SELECT song.* FROM playlist_song_map JOIN song ON playlist_song_map.songId = song.id WHERE playlistId = :playlistId AND song.isEnriched = 0 ORDER BY position LIMIT :limit")
     fun getUnresolvedSongsForPlaylist(playlistId: String, limit: Int): List<Song>
 
     @Transaction

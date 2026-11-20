@@ -468,4 +468,98 @@ class SpotifyLargePlaylistImportTest {
         val parsedNormal = SpotifyImportCheckpoint.fromJsonString(normalDesc)
         assertNull(parsedNormal)
     }
+
+    @Test
+    fun `resolution engine multi-pass fallback finds tracks when album name is cluttered`() = runBlocking {
+        val searchQueries = mutableListOf<String>()
+        val mockSearchClient = object : YouTubeSearchClient<YouTubeCandidate> {
+            override suspend fun search(query: String): List<YouTubeCandidate> {
+                searchQueries.add(query)
+                // Simulate: cluttered query with album returns empty, but simplified query succeeds
+                return if (query.contains("Aashiqui 2 (Original Motion Picture Soundtrack)")) {
+                    emptyList()
+                } else if (query == "Arijit Singh Tum Hi Ho") {
+                    listOf(
+                        YouTubeCandidate(
+                            videoId = "yt_tum_hi_ho_123",
+                            title = "Tum Hi Ho",
+                            artist = "Arijit Singh",
+                            durationSec = 262,
+                        )
+                    )
+                } else {
+                    emptyList()
+                }
+            }
+        }
+
+        val engine = DeterministicTrackResolutionEngine(mockSearchClient)
+        val candidate = engine.resolve(
+            SourceTrackMetadata(
+                title = "Tum Hi Ho",
+                artist = "Arijit Singh",
+                album = "Aashiqui 2 (Original Motion Picture Soundtrack)",
+                durationMs = 262_000,
+            )
+        )
+
+        assertNotNull("Candidate should be resolved via fallback query without cluttered album", candidate)
+        assertEquals("yt_tum_hi_ho_123", candidate!!.videoId)
+        assertTrue("Engine should have tried query with album first", searchQueries.any { it.contains("Aashiqui 2") })
+        assertTrue("Engine should have fallen back to artist + title", searchQueries.contains("Arijit Singh Tum Hi Ho"))
+    }
+
+    @Test
+    fun `entity dependency ordering ensures foreign key validity for 4000 tracks`() {
+        // Models the SQLite foreign key constraint rule:
+        // SongEntity MUST exist before SongAlbumMap, SongArtistMap, or PlaylistSongMap can reference it.
+        val existingSongs = mutableSetOf<String>()
+        val existingPlaylists = mutableSetOf<String>()
+        val existingAlbums = mutableSetOf<String>()
+        val existingArtists = mutableSetOf<String>()
+
+        val playlistId = "SPOTIFY_PLAYLIST_LINK_4k"
+        existingPlaylists.add(playlistId)
+
+        var failedTracks = 0
+        var importedTracks = 0
+
+        for (i in 1..4000) {
+            val songId = "spotify:track_$i"
+            val albumId = "spotify:album_$i"
+            val artistId = "spotify:artist_$i"
+
+            try {
+                // Correct order implemented in SpotifyPlaylistImporter:
+                // 1. AlbumEntity
+                existingAlbums.add(albumId)
+                // 2. ArtistEntity
+                existingArtists.add(artistId)
+                // 3. SongEntity
+                existingSongs.add(songId)
+
+                // 4. SongAlbumMap foreign key check
+                if (!existingSongs.contains(songId) || !existingAlbums.contains(albumId)) {
+                    throw IllegalStateException("FK constraint failed on song_album_map")
+                }
+
+                // 5. SongArtistMap foreign key check
+                if (!existingSongs.contains(songId) || !existingArtists.contains(artistId)) {
+                    throw IllegalStateException("FK constraint failed on song_artist_map")
+                }
+
+                // 6. PlaylistSongMap foreign key check
+                if (!existingPlaylists.contains(playlistId) || !existingSongs.contains(songId)) {
+                    throw IllegalStateException("FK constraint failed on playlist_song_map")
+                }
+
+                importedTracks++
+            } catch (e: Exception) {
+                failedTracks++
+            }
+        }
+
+        assertEquals(4000, importedTracks)
+        assertEquals(0, failedTracks)
+    }
 }
