@@ -426,7 +426,6 @@ Abyss/
 │   ├── ARCHITECTURE.md                  # Comprehensive architectural specification
 │   ├── PLAYBACK.md                      # Detailed playback and media session engine guide
 │   ├── PERSISTENT_PLAYLIST_INTELLIGENCE.md # Three-tier playlist and cache documentation
-│   ├── README_AUDIT.md                  # Technical verification and documentation audit
 │   └── BUILD_AND_TEST.md                # Compilation, signing, and test documentation
 ├── version.properties                   # Single source of truth for semantic versioning
 ├── build.gradle.kts                     # Root build configuration
@@ -636,7 +635,6 @@ Comprehensive technical documentation is maintained under the `docs/` directory:
 | [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) | External provider contracts, lyrics engines, and canvas backdrops. |
 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Solutions for common audio decoding, background playback, and import issues. |
 | [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md) | Pre-release verification procedure, version bumping, and signing verification. |
-| [docs/README_AUDIT.md](docs/README_AUDIT.md) | Verification audit certifying all technical facts and captured screenshots. |
 
 ---
 
