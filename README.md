@@ -1,38 +1,48 @@
 <div align="center">
 
-<img src="assets/banner.png" alt="Abyss Banner" width="100%" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/banner.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/banner.png">
+  <img src="docs/banner.png" alt="ABYSS" width="100%" />
+</picture>
 
 <br/>
 
-### Precision Audio Architecture for Android
+# ABYSS
+
+> Engineered for uncompromising listening freedom. Free software for everyone.
 
 <p align="center">
-  An open-source, serverless Android music client engineered with Jetpack Compose, AndroidX Media3, and a multi-endpoint streaming pipeline.
+  A native, serverless Android music application engineered with Jetpack Compose, AndroidX Media3, Room, and a decoupled stream intelligence pipeline.
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/Licence-GPL--3.0-007DFE?style=for-the-badge&labelColor=0E1015" alt="Licence GPL-3.0" /></a>
-  <a href="version.properties"><img src="https://img.shields.io/badge/Version-1.0.6-007DFE?style=for-the-badge&labelColor=0E1015" alt="Version 1.0.6" /></a>
+  <a href="version.properties"><img src="https://img.shields.io/badge/Version-1.0.7-007DFE?style=for-the-badge&labelColor=0E1015" alt="Version 1.0.7" /></a>
   <a href="docs/BUILD_AND_TEST.md"><img src="https://img.shields.io/badge/Platform-Android%208.0%2B%20(API%2026%E2%80%9336)-007DFE?style=for-the-badge&labelColor=0E1015" alt="Android 8.0+" /></a>
-  <a href="docs/ARCHITECTURE.md"><img src="https://img.shields.io/badge/Architecture-Clean%20%2F%20MVI%20%2B%20Media3-007DFE?style=for-the-badge&labelColor=0E1015" alt="Architecture Clean Media3" /></a>
+  <a href="docs/ARCHITECTURE.md"><img src="https://img.shields.io/badge/Architecture-Clean%20MVI%20%2B%20Media3-007DFE?style=for-the-badge&labelColor=0E1015" alt="Architecture Clean Media3" /></a>
   <a href="docs/PRIVACY_AND_PERMISSIONS.md"><img src="https://img.shields.io/badge/Telemetry-Zero%20Tracking-007DFE?style=for-the-badge&labelColor=0E1015" alt="Zero Telemetry" /></a>
 </p>
 
 <p align="center">
-  <a href="#1-project-introduction"><b>OVERVIEW</b></a> &nbsp;&bull;&nbsp;
-  <a href="#2-feature-catalogue"><b>FEATURES</b></a> &nbsp;&bull;&nbsp;
-  <a href="#3-technology-stack"><b>TECH STACK</b></a> &nbsp;&bull;&nbsp;
-  <a href="#4-system-architecture"><b>ARCHITECTURE</b></a> &nbsp;&bull;&nbsp;
-  <a href="#5-playback-pipeline"><b>PLAYBACK PIPELINE</b></a> &nbsp;&bull;&nbsp;
-  <a href="#6-search-and-playlist-import"><b>SEARCH & IMPORT</b></a> &nbsp;&bull;&nbsp;
-  <a href="#7-persistence-and-storage"><b>PERSISTENCE</b></a> &nbsp;&bull;&nbsp;
-  <a href="#8-integrations-matrix"><b>INTEGRATIONS</b></a> &nbsp;&bull;&nbsp;
-  <a href="#9-privacy-and-permissions"><b>PRIVACY</b></a> &nbsp;&bull;&nbsp;
-  <a href="#10-developer-quickstart"><b>QUICKSTART</b></a> &nbsp;&bull;&nbsp;
-  <a href="#11-repository-structure"><b>STRUCTURE</b></a> &nbsp;&bull;&nbsp;
-  <a href="#12-engineering-decisions"><b>DESIGN DECISIONS</b></a> &nbsp;&bull;&nbsp;
-  <a href="#13-documentation-index"><b>DOCUMENTATION</b></a> &nbsp;&bull;&nbsp;
-  <a href="#14-licensing-and-provenance"><b>PROVENANCE</b></a>
+  <a href="#1-introduction-and-philosophy"><b>OVERVIEW</b></a> &nbsp;&bull;&nbsp;
+  <a href="#2-application-interface"><b>SCREENSHOTS</b></a> &nbsp;&bull;&nbsp;
+  <a href="#3-system-architecture"><b>ARCHITECTURE</b></a> &nbsp;&bull;&nbsp;
+  <a href="#4-persistent-playlist-intelligence"><b>PLAYLIST INTELLIGENCE</b></a> &nbsp;&bull;&nbsp;
+  <a href="#5-feature-catalogue"><b>FEATURES</b></a> &nbsp;&bull;&nbsp;
+  <a href="#6-providers-and-integrations"><b>PROVIDERS</b></a> &nbsp;&bull;&nbsp;
+  <a href="#7-technology-stack"><b>TECH STACK</b></a> &nbsp;&bull;&nbsp;
+  <a href="#8-repository-structure"><b>STRUCTURE</b></a> &nbsp;&bull;&nbsp;
+  <a href="#9-installation-and-requirements"><b>INSTALLATION</b></a> &nbsp;&bull;&nbsp;
+  <a href="#10-building-from-source"><b>BUILD</b></a> &nbsp;&bull;&nbsp;
+  <a href="#11-configuration"><b>CONFIG</b></a> &nbsp;&bull;&nbsp;
+  <a href="#12-privacy-and-data-handling"><b>PRIVACY</b></a> &nbsp;&bull;&nbsp;
+  <a href="#13-security-and-permissions"><b>PERMISSIONS</b></a> &nbsp;&bull;&nbsp;
+  <a href="#14-testing-and-quality-assurance"><b>TESTING</b></a> &nbsp;&bull;&nbsp;
+  <a href="#15-contributing"><b>CONTRIBUTE</b></a> &nbsp;&bull;&nbsp;
+  <a href="#16-licence-and-provenance"><b>LICENCE</b></a> &nbsp;&bull;&nbsp;
+  <a href="#17-documentation-index"><b>DOCS</b></a> &nbsp;&bull;&nbsp;
+  <a href="#18-ai-assisted-development-disclosure"><b>DISCLOSURE</b></a>
 </p>
 
 </div>
@@ -40,391 +50,626 @@
 ---
 
 > [!IMPORTANT]
-> **Independent Open-Source Notice:** Abyss is an independent, community-driven open-source software project distributed under the GNU General Public Licence v3.0. It is **not** affiliated with, sponsored by, or endorsed by Google LLC, YouTube, Spotify AB, or any past or present commercial entity associated with historic media brands. This software operates entirely client-side without proprietary backend infrastructure or commercial subscriptions.
+> **Independent Open-Source Notice:** ABYSS is an independent, community-driven free software project distributed under the GNU General Public Licence v3.0. ABYSS is neither a commercial streaming service nor a music hosting platform; it does not operate proprietary media servers, distribute audio files, or own the music catalogues accessed. The application executes entirely client-side, interacting with publicly available network endpoints and local device storage under the user's direct supervision and control.
 
 ---
 
-## 1. Project Introduction
+## 1. Introduction and Philosophy
 
-### The Rationale
-Modern mobile streaming clients increasingly prioritise algorithmic promotional feeds, tracking beacons, and walled gardens over user control, audio quality, and battery efficiency. **Abyss** was engineered to return complete autonomy to the listener:
-- **Serverless Operation:** Runs 100% on-device. No central server stores your listening history, account identifiers, or playback queries.
-- **Resilient Media Pipeline:** Decouples playback logic from proprietary client locks by consuming open streams via a cascading, multi-client InnerTube resolver.
-- **Tactile Material 3 Interface:** Employs Jetpack Compose with custom liquid-glass backdrop shaders, adaptive palette matching, and dedicated landscape/tablet adaptations.
-- **Universal Bridge:** Enables users to import public Spotify and YouTube Music playlists directly into their local on-device database without requiring account credentials or API tokens.
+Modern mobile media software is frequently designed to constrain listener choice. Commercial clients routinely subordinate personal listening preferences to algorithmic promotional campaigns, restrict offline flexibility, enclose user libraries within proprietary walled gardens, and deploy telemetry trackers that compromise user privacy.
 
-### Application Identity vs Architecture Namespace
-- **User-Facing Product Name:** **Abyss** (rebranded from Abyss; originally Napster)
-- **Android Application ID:** `com.napster.music` — permanently retained across all build variants to ensure zero disruption to existing device installations, update paths, downloaded media storage directories, and app signing identity.
-- **Kotlin Package Namespace:** `com.rift.music` — all application source sets, components, ViewModels, and services are fully migrated to this modern Kotlin namespace.
-- **Room Database Schema Continuity:** Schema version 38 with full migration history (schemas 1–38) preserved in both `com.rift.music.db.InternalDatabase` and historical paths, ensuring non-destructive database opening.
+**ABYSS** was conceived and engineered to establish a transparent, robust, and dignified alternative:
 
-### Visual Rebrand Status & Screenshots Placeholder
-> [!NOTE]
-> The application code, Kotlin namespace, and architecture have completed full stabilization. A final visual rebrand pass for new logo assets, splash art, and updated theme graphics is queued. Screenshots will be refreshed upon completion of the asset rebrand.
+- **Uncompromising Listening Freedom:** Listeners retain uninhibited authority over their playback queues, local storage, playlist structures, and audio configurations.
+- **Strictly Free and Open-Source Software:** Distributed under the GNU General Public Licence v3.0, ensuring full transparency, auditability, and preservation of user software freedoms.
+- **Client-Side Autonomy:** ABYSS requires no centralised proprietary user accounts, subscription credentials, or application backend infrastructure. All database queries, stream resolutions, and playlist operations execute locally on the host device.
+- **Respect for Listener Privacy:** The application includes zero telemetry libraries, tracking beacons, advertising frameworks, or behavioural profiling SDKs. External network requests are restricted strictly to fetching audio streams, metadata, canvas artwork, and synchronised lyrics.
+- **Sound Engineering Quality:** Built with modern Android architectural components, including AndroidX Media3, Jetpack Compose, Room persistence, Kotlin Coroutines, and Dagger Hilt dependency injection.
 
----
+### Technical Identity & Package Nomenclature
 
-## 2. Feature Catalogue
+To preserve database migration history, existing user installations, media download structures, and local SQLite data, the project maintains strict technical package stability:
+- **Public Product Name:** ABYSS
+- **Android Application ID:** `com.napster.music` (configured permanently in `defaultConfig.applicationId`)
+- **Internal Kotlin Namespace:** `com.rift.music` (configured in `android.namespace` across all source sets)
 
-### Core Audio & Playback
-- **Adaptive Session Intelligence (ASI 1.0):** Autonomous, on-device recommendation engine modeling listening session momentum, atmosphere profiles (Party, Workout, Relaxed, Focus, etc.), harmonic BPM matching, and beam search trajectory optimization ($K=4$, $H=5$) with authentic Room DB historical event reconstruction. Disabled by default via feature flag (`enableAsiAutoplay`).
-- **Speed Dial Random Discovery & Anti-Repetition:** Matrix-aligned 5-dot Random action preloading genuine recent events and generating genre/vibe-matched queues while strictly filtering out top 30 most-played and recent 50 tracks to eliminate repetition loops.
-- **Persistent Song Dislike System:** Dedicated Room schema v38 table and Settings management screen permanently excluding disliked tracks from playback, queues, and automix across providers.
-- **AndroidX Media3 / ExoPlayer Engine:** Built upon ExoPlayer with customized audio sinks, continuous buffer management, and automatic audio focus handling.
-- **Truth-First Audio Diagnostics:** Real-time telemetry monitoring Media3 decoder inputs (actual codec, bitrate, sample rate, bit depth), detecting audio chain downgrades, and displaying transparent UI badges without unverified bit-perfect claims.
-- **Bluetooth Output-Route Telemetry:** Non-blocking tracking of connected hardware sinks (Wired, USB DAC, HDMI, Internal Speaker) and Bluetooth A2DP transport codecs (LDAC, aptX, AAC, SBC, Samsung Seamless) via Android audio device callbacks.
-- **Per-Network Quality Preferences:** Independent audio quality selectors for Wi-Fi and Cellular connections, respecting Data Saver mode and transitioning smoothly upon network handover.
-- **HTTP Streaming Add-ons:** Modular support for external HTTP streaming add-on servers using an open JSON manifest specification, with search-probe fallbacks, request deduplication, and 429 Retry-After backoff.
-- **Lossless FLAC File Export:** Export cached lossless tracks directly to user-selected storage via Android SAF, embedding Vorbis comment tags, UTF-8 Unicode metadata, album art, and synchronized lyrics without altering raw audio frames (non-FLAC sources exported cleanly as M4A).
-- **Direct Queue Reordering:** Long-press drag-and-drop reordering of queue items with visual elevation, haptic feedback, edge auto-scrolling, and full TalkBack accessibility actions.
-- **Shuffle-Aware Media3 Queue Synchronization:** Seamless reordering in shuffle mode updates the Media3 `DefaultShuffleOrder` permutation in-place, keeping active playback uninterrupted and maintaining accurate timeline indices.
-- **Progressive Recommendation Selection:** Deterministic recommendation post-processor with a 40-track recency cooldown, two-phase progressive selection (fresh pool strictly prioritized before recent candidates), artist and album separation, and preserved artist radio mode.
-- **Seamless Autoplay & Radio Continuation:** Persistent Autoplay infinity toggle chip in Queue and Player controls, automatically transitioning to algorithmic radio recommendations with fallback to official YouTube Radio stations.
-- **High-Capacity Spotify Public Playlist Import:** Paginated import supporting 1,000+ tracks via unauthenticated embed guest tokens and Pathfinder GraphQL, respecting server `Retry-After` rate-limiting and preserving duplicate tracks in exact sequence.
-- **Audio Equalisation & DSP Effects:** Integrated graphical equaliser, bass boost, virtualiser, and system DSP intent forwarding.
-- **DJ Mode & Beat-Matched Transitions:** Gapless playback, configurable crossfade durations, and automated beat-matching energy transitions.
-- **Off-Screen & Background Playback:** Fully decoupled Android Foreground Service (`MusicService`) managing hardware media buttons, lock-screen notifications, and Bluetooth transport controls.
-- **Local Audio Library:** Real-time scanning and merging of on-device audio files stored in device storage alongside cloud streams.
-- **Offline Download & Cache Controls:** Background downloading managed by `ExoDownloadService` with granular cache eviction and storage budget management.
-
-### Interface & Experience
-- **Liquid Glass & Dynamic Blur:** Hardware-accelerated backdrop blur (`Kyant0/backdrop`) creating frosted glass aesthetics behind playback bars and navigation headers.
-- **Synchronised Lyrics:** Multi-source lyrics engine querying LRCLIB, KuGou, Paxsenix, Better Lyrics, and local embedded LRC/TTML tags with word-level and line-level karaoke synchronisation.
-- **Visual Canvas:** High-definition animated album canvas rendering supporting Apple Music canvas streams, Tidal canvas streams, and artist video loops.
-- **Android Auto Integration:** First-class vehicle media browsing and dashboard playback support, including cold-start playlist resumption, styled content lists, and vehicle transport controls via AndroidX Media3.
-- **Multiple Form Factors:** Dedicated responsive layouts for smartphones, tablets, foldables, and car displays with smooth 120Hz scrolling and zero-recomposition chrome animations.
-- **Interactive Widgets:** Redesigned interactive widgets including the minimalist Abyss Dot Player (2×2), split-panel Abyss Lyrics Player (4×2), and animated Abyss Vinyl Deck (4×2).
-- **App Usage Telemetry:** Settings > App Usage displays interactive, real-time and historical graphs for CPU load, GPU frame rendering duration, and Network data consumption rendered with smooth cubic Bézier curves and zero background tracking overhead.
-
-### Discovery & Integrations
-- **Multi-Endpoint InnerTube Search:** Search songs, albums, artists, community playlists, and mood stations with instant client-side debouncing (300 ms).
-- **Public Spotify & YouTube Music Import:** Resolve and import any public Spotify or YouTube Music playlist URL into native Room playlists using client-side scrapers and InnerTube resolution without account credentials.
-- **Audioscrobbling:** Native asynchronous scrobbling support for **Last.fm** and **ListenBrainz** via official REST endpoints.
-- **Backup & Portability:** One-click encrypted JSON/SQLite database export and restoration for library entries, custom playlists, and playback settings.
-
-### Intentionally Absent Features
-To maintain uncompromising privacy, codebase stability, and architecture integrity, several non-essential modules and unsupported promises are explicitly excluded:
-- No real-time collaborative rooms or proprietary multi-user sync protocols (Listen Together).
-- No private Spotify user authentication, cookies, or GraphQL account token extractors.
-- No microphone-based ambient audio recognition (Shazam clones).
-- No Discord Rich Presence sockets or external RPC daemons.
-- No analytics SDKs, advertising frameworks, or crash telemetry endpoints.
-- No unsupported promises of "bit-exact" or guaranteed end-to-end hardware bit-perfect reproduction (playback routes through standard Android audio sinks).
-- No Wear OS, Android TV, desktop applications (Windows/macOS/Linux), or browser extensions.
+This distinction maintains continuity across historical updates while presenting a cohesive, professional identity to listeners.
 
 ---
 
-## 3. Technology Stack
+## 2. Application Interface
 
-Abyss uses modern, production-grade Android open-source technologies:
+The screenshots below depict the actual ABYSS user interface running on an Android Virtual Device (API level 36, 1080 &times; 2400 resolution) in standard release configuration.
 
-| Layer | Technology | Version | Architectural Responsibility |
-|---|---|---|---|
-| **Language** | Kotlin | `2.1.0` | Primary codebase language with Coroutines and Flow |
-| **UI Framework** | Jetpack Compose | BOM `2024.12.01` | Declarative UI, Material 3, animations, and adaptive layouts |
-| **Audio Engine** | AndroidX Media3 / ExoPlayer | `1.5.1` | Audio decoding, buffering, caching, and MediaSession |
-| **Local Database** | AndroidX Room | `2.6.1` | SQLite persistence across 38 schema migrations |
-| **Preferences** | AndroidX DataStore | `1.1.1` | Asynchronous key-value settings storage |
-| **Dependency Injection** | Dagger Hilt | `2.54` | Application-wide compile-time dependency inversion |
-| **Image Loading** | Coil 3 | `3.0.4` | Asynchronous image decoding, memory caching, and disk cache |
-| **Networking & HTTP** | Ktor Client / OkHttp | `3.0.3` / `5.0.0-alpha.14` | HTTP/2, TLS connection pooling, and payload parsing |
-| **Serialization** | Kotlinx Serialization | `1.7.3` | Multiplatform JSON serialization for models and APIs |
-| **Backdrop Blur** | Kyant0/backdrop | Source | Hardware-accelerated frosted glass surface rendering |
-| **Cast Extension** | Google Cast SDK | `22.0.0` | Optional Chromecast protocol routing (`gms` variant only) |
+<table>
+  <tr>
+    <td width="33.3%" align="center">
+      <img src="docs/images/screenshots/home.png" alt="Home Screen" width="100%" />
+      <br/>
+      <sub><b>Home Dashboard</b><br/>Speed dial tiles, dynamic greeting, random discovery, and glassmorphic floating navigation pill.</sub>
+    </td>
+    <td width="33.3%" align="center">
+      <img src="docs/images/screenshots/now-playing.png" alt="Now Playing Screen" width="100%" />
+      <br/>
+      <sub><b>Now Playing View</b><br/>Visual canvas video background, Opus format indicator, timeline scrubber, and transport controls.</sub>
+    </td>
+    <td width="33.3%" align="center">
+      <img src="docs/images/screenshots/queue.png" alt="Queue Screen" width="100%" />
+      <br/>
+      <sub><b>Queue Management</b><br/>Sequential playback queue, active track tracking, and toggles for shuffle, repeat, and autoplay.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="33.3%" align="center">
+      <img src="docs/images/screenshots/lyrics.png" alt="Lyrics Screen" width="100%" />
+      <br/>
+      <sub><b>Synchronised Lyrics</b><br/>Word-by-word synchronised lyric highlighting with glowing typography and blurred artwork backing.</sub>
+    </td>
+    <td width="33.3%" align="center">
+      <img src="docs/images/screenshots/search.png" alt="Search Screen" width="100%" />
+      <br/>
+      <sub><b>Search & Discovery</b><br/>Multi-tab exploration featuring categorised Moods & moments, Genres, and real-time query suggestions.</sub>
+    </td>
+    <td width="33.3%" align="center">
+      <img src="docs/images/screenshots/library.png" alt="Library Screen" width="100%" />
+      <br/>
+      <sub><b>Library & Collections</b><br/>Local collections, playlist sorting, downloaded audio storage, and smart Liked / Top 50 shelves.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="33.3%" align="center">
+      <img src="docs/images/screenshots/artist.png" alt="Artist Screen" width="100%" />
+      <br/>
+      <sub><b>Artist Details</b><br/>Full artist profile page displaying subscriber metrics, monthly listener counts, biography, and top songs.</sub>
+    </td>
+    <td width="33.3%" align="center">
+      <img src="docs/images/screenshots/equaliser.png" alt="Equaliser Screen" width="100%" />
+      <br/>
+      <sub><b>Abyss Equaliser & DSP</b><br/>Radial 3-point acoustic tuning dial, Abyss signature acoustic profiles, and Dolby Atmos audio modes.</sub>
+    </td>
+    <td width="33.3%" align="center">
+      <img src="docs/images/screenshots/settings.png" alt="Settings Screen" width="100%" />
+      <br/>
+      <sub><b>System Preferences</b><br/>Granular controls for audio crossfade, offline storage, appearance, Standby mode, and privacy.</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
-## 4. System Architecture
+## 3. System Architecture
 
-The repository enforces a clean, modular architecture separating presentation, domain, and data layers:
+ABYSS follows a modularised Clean Architecture pattern with unidirectional data flow (MVI) powered by Kotlin Coroutines and StateFlow. UI components remain strictly decoupled from playback session management and background stream extraction.
 
 ```mermaid
-graph TD
-    subgraph UI ["Presentation Layer (Jetpack Compose)"]
-        A[Navigation Graph] --> B[Feature Screens & ViewModels]
-        B --> C[PlayerConnection State Flow]
-        B --> D[Design System & Shaders]
+flowchart TD
+    subgraph UI_Layer["UI & Presentation Layer (Jetpack Compose)"]
+        UI_Screens["Screens: Home / Player / Queue / Library / Search / Settings"]
+        PlayerConn["PlayerConnection (MediaController Wrapper)"]
+        ViewModels["Feature ViewModels (StateFlow / MVI)"]
+        UI_Screens <--> ViewModels
+        UI_Screens <--> PlayerConn
     end
 
-    subgraph Service ["Audio Subsystem (Android Service)"]
-        E[MusicService] --> F[MediaSession & MediaLibrarySessionCallback]
-        E --> G[AndroidX ExoPlayer Instance]
-        G --> H[MediaSourceFactory / Caching Pipeline]
+    subgraph Service_Layer["Media & Playback Service Layer"]
+        MusicSvc["MusicService (MediaLibraryService / MediaSessionService)"]
+        ExoEng["ExoPlayer / Media3 Engine"]
+        PlayerConn <-->|Android IPC / MediaSession| MusicSvc
+        MusicSvc --> ExoEng
     end
 
-    subgraph Domain ["Resolution & Stream Cascade"]
-        H --> I[InnerTube Multi-Client Resolver]
-        I --> J["Client: WEB_REMIX"]
-        I --> K["Client: ANDROID_MUSIC"]
-        I --> L["Fallback: Spine / JioSaavn / Addons"]
+    subgraph Audio_DSP["Audio & DSP Pipeline"]
+        CustomEQ["CustomEqualizerAudioProcessor"]
+        AudioOffload["Hardware Audio Offload (API 29+)"]
+        Crossfade["Crossfade Transition Engine"]
+        ExoEng --> Crossfade
+        Crossfade --> CustomEQ
+        CustomEQ --> AudioOffload
     end
 
-    subgraph Data ["Persistence & Network"]
-        M[(Room Database: 38 Schemas)]
-        N[(AndroidX DataStore: Preferences)]
-        O[ExoDownloadService: Disk Cache]
+    subgraph Resolution_Layer["Decoupled Stream Resolution Pipeline"]
+        StreamRes["StreamResolver"]
+        ResDedup["ResolutionDeduplicator (Single-Flight Async)"]
+        StreamCache["PlaybackStreamCache (L1 Memory + L2 Room SQLite)"]
+        StreamRes --> ResDedup
+        ResDedup --> StreamCache
     end
 
-    C <==>|MediaSession RPC| F
-    B --> M
-    B --> N
-    H --> O
+    subgraph Provider_Clients["External Integration Modules"]
+        InnerTubeMod[":innertube (YouTube Music Client)"]
+        SpotifyMod[":spotify (Metadata Client)"]
+        LyricsMod[":lrclib / :kugou / :betterlyrics / :musixmatchlyrics"]
+        CanvasMod[":canvas / :applecanvas / :vivimusiccanvas"]
+        LastFmMod[":lastfm (Scrobbling Client)"]
+        ResDedup --> InnerTubeMod
+    end
+
+    subgraph Persistence_Layer["Local Persistence Layer"]
+        RoomDB[("Room Database: song.db (v39)")]
+        DataStore[("AndroidX DataStore Preferences")]
+        MusicSvc --> RoomDB
+        StreamCache <--> RoomDB
+        ViewModels <--> DataStore
+        ViewModels <--> RoomDB
+    end
+
+    subgraph Background_Layer["Background Execution"]
+        WorkMgr["AndroidX WorkManager (Enrichment Workers)"]
+        WorkMgr --> RoomDB
+        WorkMgr --> InnerTubeMod
+    end
 ```
 
-### Module Responsibilities
-- **`:app`**: Application root containing Compose screens, Navigation graph, ViewModels, Hilt modules, Room DAOs (`com.rift.music.db`), and the foreground `MusicService`.
-- **`:innertube`**: Dedicated YouTube Music / InnerTube client engine handling request signing, protobuf payloads, and JSON stream models.
-- **`:canvas` / `:applecanvas` / `:vivimusiccanvas` / `:artistvideo`**: Specialised visual stream renderers providing animated video album canvas art.
-- **`:betterlyrics` / `:kugou` / `:lrclib` / `:paxsenixlyrics` / `:simpmusic`**: Modular lyric extractors queried concurrently via Kotlin Coroutines.
-- **`:lastfm`**: Authenticated Last.fm REST API client with scrobble queueing and MD5 authentication hashing.
-- **`:spotify`**: Public Spotify playlist scraper resolving web metadata into standard Song track queries.
-- **`:jiosaavn` / `:spine`**: Secondary and regional media resolvers utilised when primary YouTube audio tracks are geo-restricted.
+### Layer Responsibilities
+
+- **Presentation Layer:** Built entirely in declarative Jetpack Compose. Screens communicate with domain logic through immutable state containers. The floating navigation pill, wave visualizers, smooth corner surfaces, and dynamic theme paletting adapt seamlessly across phone, foldable, tablet, and landscape Standby orientations.
+- **Service Layer:** `MusicService` extends `androidx.media3.session.MediaLibraryService`, providing standard Android media session coordination, background playback continuation, audio focus arbitration, lock-screen controls, and Android Auto integration.
+- **Audio Processing Layer:** Implements `CustomEqualizerAudioProcessor` within the ExoPlayer audio sink pipeline, enabling pre-amp gain adjustment, band-level equalisation, radial tonal shaping, and beat-aware crossfading without external audio server dependencies.
+- **Stream Resolution Pipeline:** Shields playback from network latency through multi-layered resolution. Resolves track metadata independently from playable streams, maintaining single-flight request deduplication via `ResolutionDeduplicator`.
+- **Persistence Layer:** Uses AndroidX Room (`song.db`, schema version 39) with WAL (Write-Ahead Logging) mode enabled for high-throughput concurrent reads and writes, alongside AndroidX DataStore for user preferences.
 
 ---
 
-## 5. Playback Pipeline
+## 4. Persistent Playlist Intelligence
 
-Every audio playback event follows a deterministic, resilient lifecycle from user interaction to the hardware audio sink:
+Managing expansive personal music libraries (containing upwards of 4,000 tracks per playlist) introduces severe architectural challenges for mobile clients: network rate-limiting, SQLite foreign key constraint failures, process termination during imports, and ephemeral playback URL expiration.
+
+ABYSS resolves these vulnerabilities through **Persistent Playlist Intelligence**, a decoupled three-tier persistence and stream resolution architecture:
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User as Listener
-    participant UI as Feature Screen / ViewModel
-    participant Conn as PlayerConnection
-    participant Svc as MusicService
-    participant Res as Stream Resolver Pipeline
-    participant Cache as SimpleCache (Disk)
-    participant Sink as ExoPlayer AudioSink
+    participant UI as SpotifyImportUI
+    participant Importer as SpotifyPlaylistImporter
+    participant DB as Room Database (song.db)
+    participant WM as WorkManager (Background)
+    participant Res as TrackResolutionEngine
+    participant YT as InnerTube Client
+    participant Cache as PlaybackStreamCache
 
-    User->>UI: Select Track / Album / Playlist
-    UI->>Conn: playMediaItem(MediaMetadata)
-    Conn->>Svc: Send Transport Command (MediaBrowser)
-    Svc->>Cache: Check rift://cache/ for Cached Audio
-    alt Track Cached
-        Cache-->>Svc: Provide Local File DataSource
-    else Network Stream Required
-        Svc->>Res: Resolve Stream URL (VideoId)
-        Res->>Res: Try Client 1: WEB_REMIX
-        opt Resolution Fails (HTTP 403 / PO-Token Required)
-            Res->>Res: Fallback Client 2: ANDROID_MUSIC
-        end
-        Res-->>Svc: Direct Audio Stream URL (HTTPS / Opus / AAC)
+    User->>UI: Input Spotify Playlist URL / ID
+    UI->>Importer: Begin Playlist Import
+    Importer->>Importer: Fetch Track Metadata Pages (Public API)
+    
+    rect rgb(20, 25, 35)
+        Note over Importer,DB: Tier 1: Immediate Metadata Persistence
+        Importer->>DB: Batch Insert SongEntity (sourceId = "spotify:id")
+        Importer->>DB: Batch Insert AlbumEntity & ArtistEntity
+        Importer->>DB: Batch Insert PlaylistSongMapEntity
+        DB-->>UI: 100% Tracks Visible & Browsable Offline
     end
-    Svc->>Sink: Prepare MediaSource & Feed AudioTrack Sink
-    Sink-->>User: Gapless Hardware Audio Output
-    Svc->>UI: Emit PlaybackState (Playing, Position, Buffering)
+
+    rect rgb(25, 35, 45)
+        Note over Importer,WM: Tier 2: Provider Identity Mapping
+        Importer->>Res: Eagerly Resolve First 5 Tracks
+        Res->>YT: Search Best Match (Title + Artist + Clean Album)
+        YT-->>Res: Return YouTube videoId
+        Res->>DB: Insert ProviderMappingEntity (spotify:id -> videoId)
+        Importer->>WM: Enqueue Background Enrichment Worker (Remaining Tracks)
+        WM->>Res: Process Queued Tracks with Exponential Backoff
+        Res->>DB: Update ProviderMappingEntity
+    end
+
+    rect rgb(35, 25, 45)
+        Note over User,Cache: Tier 3: Temporary Playback Stream Resolution
+        User->>UI: Tap Play on Track
+        UI->>Res: Request Playable Stream
+        Res->>DB: Check ProviderMappingEntity (Fetch providerTrackId)
+        Res->>Cache: Inspect L1 Memory & L2 Room Cache
+        alt Cache Hit & Not Expired
+            Cache-->>UI: Return Cached Audio Stream URL
+        else Cache Miss or Expired
+            Res->>YT: Fetch Playback Manifest (iOS Client Bypass)
+            YT-->>Res: Return Direct Audio Stream + Expiry Timestamp
+            Res->>Cache: Write PlaybackStreamCacheEntity (with 10-min safety margin)
+            Res-->>UI: Initiate Playback in ExoPlayer
+        end
+    end
 ```
 
----
+### The Three-Tier Decoupling Model
 
-## 6. Search and Playlist Import
+1. **Tier 1: Persistent Track Metadata (`SongEntity`, `AlbumEntity`, `ArtistEntity`)**
+   - Tracks imported from external sources (e.g. Spotify playlists) are written to SQLite immediately using deterministic source identifiers (`spotify:<track_id>`).
+   - Insertion ordering ensures parent `SongEntity` records are committed before foreign-keyed `PlaylistSongMap` records, eliminating SQLite code 787 foreign key constraint violations.
+   - The entire playlist is 100% visible, searchable, and organisable offline within seconds, without waiting for audio stream lookups.
 
-### Debounced Multi-Type Search
-The search architecture integrates a 300 ms debounce operator across Kotlin Flows. As characters are entered, queries are directed through InnerTube's suggest engine, yielding instantaneous suggestions alongside faceted category filters:
-`All` &bull; `Songs` &bull; `Albums` &bull; `Artists` &bull; `Playlists` &bull; `Featured Stations`
+2. **Tier 2: Persistent Provider Identity Mapping (`ProviderMappingEntity`)**
+   - Decouples metadata identity from streaming provider endpoints (`sourceId -> providerTrackId`, e.g. `spotify:6rqhFgbbKwnb9MLmUQDhG6` mapped to YouTube `videoId:2G_Z944qlnM`).
+   - The first five tracks are resolved eagerly to permit instantaneous playback. The remaining tracks are handed to an AndroidX `WorkManager` background job that executes with exponential backoff and network-throttling mitigation.
+   - Employs a multi-pass fallback scoring heuristic:
+     1. Pass 1: Strict normalised matching (`Title + Artist + Clean Album`).
+     2. Pass 2: Relaxed matching (`Title + Artist`).
+     3. Pass 3: Transformed query stripped of soundtrack or deluxe edition qualifiers.
 
-### Public Spotify Playlist Importer
-Users can paste any public Spotify playlist URL (e.g. `https://open.spotify.com/playlist/...`). Abyss processes the request client-side without authenticating with Spotify:
-
-```
-[Spotify Public URL] 
-        │
-        ▼ (Client-side HTML/Metadata Scraper)
-[Extract: Track Title, Primary Artist, Duration, Album]
-        │
-        ▼ (Coroutines Async Resolution Batch)
-[Query InnerTube Engine per Track with Fuzzy Matching]
-        │
-        ▼ (Relational Insertion)
-[Insert Resolved Songs into Local Room Playlist]
-```
-
-### Public YouTube Music Playlist Importer
-Users can paste any public or unlisted YouTube / YouTube Music playlist URL (or playlist ID). Abyss parses the playlist ID, fetches track metadata directly via InnerTube without account credentials, and inserts the playlist and songs into the local Room database with real-time import progress.
+3. **Tier 3: Temporary Playback Stream Information (`PlaybackStreamCacheEntity`)**
+   - Direct media URLs provided by audio endpoints are ephemeral and carry explicit expiration parameters (the `expire=` URL timestamp).
+   - ABYSS maintains a two-layer cache: an in-memory L1 cache for instant track transitions and a persistent Room L2 cache that survives application restarts.
+   - Stream records enforce a **10-minute safety window**: if a URL expires within 10 minutes, the cache treats it as expired and initiates a silent background refresh.
+   - Any HTTP 403 (Forbidden), 404 (Not Found), or 416 (Range Not Satisfiable) error instantly invalidates the cache entry and triggers single-flight resolution deduplication via `ResolutionDeduplicator`.
 
 ---
 
-## 7. Persistence and Storage
+## 5. Feature Catalogue
 
-### Room Relational Database
-Abyss maintains an SQLite database (`song.db`) managed via AndroidX Room with 38 sequential migration stages. Strict schema integrity guarantees that existing user data is preserved across application updates without table drops or data loss.
+### Listening Experience & Playback Control
+- **Format Reproduction:** Plays Opus, AAC, MP3, FLAC, and Vorbis audio streams up to high-bitrate thresholds.
+- **Audio Offload:** Supports hardware-level audio offload on Android 10+ (API 29+) to minimise power consumption during extended headphone listening.
+- **Seamless Crossfade:** Configurable crossfade duration (0 to 12 seconds) smoothly interpolates volume between consecutive tracks.
+- **Manual Skip Crossfade:** Applies smooth fade-in and fade-out envelopes when skipping manually between tracks.
+- **Silence Elimination:** Automatic silence detection skips lead-in and lead-out gaps between audio tracks without playback stutter.
+- **Audio Normalisation:** Automatic gain adjustment based on ReplayGain and loudness metadata prevents jarring volume fluctuations across disparate albums.
+- **Playback Restoration:** Remembers complete playback queue state, seek positions, and repeat modes across system restarts.
 
-| Table Entity | Primary Role |
-|---|---|
-| `SongEntity` | Track metadata, duration, local file paths, and thumbnail references |
-| `ArtistEntity` | Artist biographies, subscriber counts, and thumbnail artwork |
-| `AlbumEntity` | Release year, artist relations, track counts, and cover images |
-| `PlaylistEntity` & `PlaylistSongMap` | Custom user playlists and relational song mappings |
-| `SearchHistory` | Local user search terms with chronological indexing |
-| `Event` | Timestamped playback events utilised for recommendations and stats |
-| `FormatEntity` | Audio stream encoding, bitrate, and mime types for offline playback |
-| `LyricsEntity` | Cached LRC and plain-text lyrics indexed by track identifier |
-| `SongAnalysisEntity` | Cached acoustic metrics (BPM, key, energy) for DJ transitions |
-| `DislikedSongEntity` | Schema v38 table permanently excluding disliked tracks from queues and radio |
+### Acoustic Engineering & Equaliser
+- **Radial Tonal Dial:** Intuitive 3-point radial tuning wheel providing real-time shaping across Lows (Bass), Mid-range, and Highs (Treble).
+- **Abyss Signature Presets:** Tailored hardware curves for Flat, Abyss Deep, Acoustic, 3D Stage, Bass Boost, Pure Clarity, Soft Bass, Rock, Pop, Jazz, Electronic, and Voice.
+- **Dolby Atmos Profiles:** Tuned spatial profile configurations for Dolby Open, Dolby Rich, and Dolby Focused acoustic envelopes.
+- **Pre-Amp Gain Control:** Granular pre-amplification scaling to prevent clipping on high-gain headphones.
 
-### DataStore Preferences
-Non-relational preferences (equaliser band gains, theme selection, dynamic colours, download quality, and crossfade duration) are stored asynchronously using AndroidX DataStore (`com.rift.music.constants.PreferenceKeys`).
+### Music Discovery & Metadata
+- **Multi-Tab Search:** Unified search interface providing instant auto-complete suggestions, browsing history, and genre hubs.
+- **Moods & Moments:** Categorised musical hubs for Chill, Commute, Energize, Feel Good, Focus, Gaming, Party, Romance, Sad, Sleep, and Workout.
+- **Complete Artist Profiles:** High-resolution artist banners, subscriber statistics, monthly listener figures, biographical summaries, and chronologically indexed album catalogues.
+- **Album & Single Repositories:** Detailed album presentations featuring track listings, release years, record label attributions, and total duration metrics.
 
----
+### Synchronised Lyrics & Visual Canvas
+- **Synchronised Karaoke Highlighting:** Word-by-word synchronised lyric highlighting with glowing typography.
+- **Multi-Source Provider Engine:** Aggregates lyrics dynamically across LRCLIB, KuGou, BetterLyrics, Musixmatch, Paxsenix, and YouLyPlus.
+- **Full-Screen Lyric Theatre:** Expands lyrics into a dedicated full-screen presentation mode designed for tablets and landscape displays.
+- **Looping Canvas Video:** Fetches and loops visual background canvases from Apple Music, Vivi Music, and artist video feeds.
 
-## 8. Integrations Matrix
+### Library Organisation & Data Management
+- **Local & Remote Convergence:** Displays local on-device audio files alongside cloud-streamed favourites in unified shelves.
+- **Smart Playlists:** Automated smart collections for Liked Tracks, Downloaded Audio, and Top 50 Most Played.
+- **Selective Folder Scanning:** Customisable inclusion and exclusion lists for local folder indexing.
+- **Flexible Sorting:** Sort playlists and tracks by date added, title, artist, album, or release year.
+- **Full Library Backup:** Export and import complete Room databases and DataStore preferences in JSON format for offline migration.
 
-| Service | Mechanism | Authentication Required | Purpose | Failure Behaviour |
-|---|---|---|---|---|
-| **YouTube Music** | InnerTube Client | No (Client-side requests) | Primary audio streaming, search, feeds | Cascades to alternative client headers |
-| **Spotify** | Public Web Scraper | **No** (Public lists only) | Playlist tracklist extraction | Displays parsing error alert to user |
-| **Last.fm** | REST API | Yes (API Key + User Session) | Asynchronous audioscrobbling | Caches scrobble offline, retries later |
-| **ListenBrainz** | REST API | Yes (User API Token) | Open scrobbling protocol | Drops non-critical telemetry packet |
-| **LRCLIB** | REST API | No | Synchronised LRC lyric provider | Falls back to KuGou or Paxsenix |
-| **Apple Music** | CDN Endpoint | No | High-resolution animated canvas video | Falls back to static album artwork |
-| **HTTP Add-ons** | Open JSON Manifest | No / Server-defined | Modular alternative streaming | Falls back to next candidate in cascade |
-
----
-
-## 9. Privacy and Permissions
-
-Abyss adheres to a strict zero-telemetry policy. The application requires only the minimal set of Android runtime permissions necessary to deliver local and streaming audio playback:
-
-```xml
-<!-- Network Communications -->
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
-<!-- Background Playback -->
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-<uses-permission android:name="android.permission.WAKE_LOCK" />
-
-<!-- Local Storage Audio Library -->
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-<uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-
-<!-- System Integration -->
-<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-```
-
-- **Zero Analytics:** Contains no Firebase Analytics, Mixpanel, Segment, or proprietary metrics SDKs.
-- **Zero Crash Telemetry:** No Sentry, Crashlytics, or Bugsnag libraries. Crash logs remain purely on-device in `adb logcat`.
-- **No Account Required:** Operates immediately after installation without mandatory registration, email, or telephone verification.
+### Android System Integration
+- **MediaSession & Notification:** Compliant with Android 13+ media control standards, featuring dynamic palette colouring and scrubbable seekbars.
+- **Android Auto Compatibility:** Direct integration with Android Auto head units (`com.google.android.gms.car.application`), enabling safe hands-free playback, playlist selection, and queue navigation while driving.
+- **Home-Screen Widgets:** Three thoughtfully designed native Android home-screen widgets:
+  - *Abyss Dot Player:* Compact 2&times;2 interactive mini-player.
+  - *Abyss Lyrics Player:* Wide 2&times;4 split-panel widget displaying real-time synchronised lyrics.
+  - *Abyss Vinyl Deck:* Vintage 2&times;4 rotating vinyl turntable widget with tactile controls.
+- **Standby Mode:** Minimalist horizontal display mode featuring large clock, track metadata, and subtle controls for nightstand docking.
+- **Dynamic Launcher Icons:** In-app selection of custom application launcher icons and monochrome themed icons.
 
 ---
 
-## 10. Developer Quickstart
+## 6. Providers and Integrations
 
-### Prerequisites
-- **Java Development Kit (JDK):** Version 21 recommended.
-- **Android SDK:** Installed with Build-Tools `36.0.0` and Platform API `36` / `37`.
-- **Android NDK:** Version `27.0.12077973` (configured via `local.properties` or `ANDROID_NDK_HOME`).
-- **Gradle:** Wrapper included (`gradlew` / `gradlew.bat`).
+ABYSS aggregates external audio, metadata, canvas artwork, and synchronised lyrics via dedicated, sandboxed Gradle modules. No proprietary API keys are mandatory for core functionality.
 
-### Build Variants
-- **`arm64Foss`**: Primary development flavour. Excludes proprietary Google Mobile Services (GMS) binaries and includes full 64-bit ARM optimizations.
-- **`universalFoss`**: 100% Free and Open Source variant bundled for all CPU architectures (`arm64-v8a`, `armeabi-v7a`, `x86_64`).
-- **`universalGms`**: Universal build containing Google Cast SDK bindings for Chromecast streaming.
-
-### Compilation Commands
-
-```powershell
-# 1. Build the primary ARM64 FOSS Debug APK
-.\gradlew.bat :app:assembleArm64FossDebug
-
-# 2. Execute all unit tests across the application and submodules
-.\gradlew.bat :canvas:test :innertube:testDebugUnitTest :spine:testDebugUnitTest :app:testArm64FossDebugUnitTest
-
-# 3. Assemble signed release APK
-.\gradlew.bat :app:assembleArm64FossRelease
-
-# 4. Install directly onto a connected physical device or emulator
-.\gradlew.bat :app:installArm64FossDebug
-```
+| Module | Integration Target | Role & Capabilities | Authentication |
+|---|---|---|---|
+| `:innertube` | YouTube Music | Primary search, track metadata, artist profiles, audio stream manifests, and related recommendations. | None (Public client bypass) |
+| `:spotify` | Spotify Web API | Public playlist imports, album tracklists, and metadata extraction. | Client Credentials (Auto-fetched anonymously) |
+| `:lrclib` | LRCLIB | Open-source community synchronised and plain-text lyrics. | None |
+| `:kugou` | KuGou Music | High-accuracy synchronised lyrics and bilingual translations. | None |
+| `:betterlyrics` | BetterLyrics | Enhanced synchronised lyric streams and syllable-timed transcripts. | None |
+| `:musixmatchlyrics` | Musixmatch | Tokenised synchronised lyric provider. | Anonymous Token |
+| `:paxsenixlyrics` | Paxsenix | Community-hosted lyric endpoint. | None |
+| `:youlyplus` | YouLyPlus | Fallback synchronised lyric provider. | None |
+| `:canvas` / `:applecanvas` | Apple Music Canvas | Looping short-form video artwork for active playback screens. | None |
+| `:vivimusiccanvas` | Vivi Music Canvas | Canvas video loops and aesthetic motion backdrops. | None |
+| `:artistvideo` | Artist Video Feeds | Artist promotional video stream backdrops. | None |
+| `:jiosaavn` | JioSaavn | Regional music catalogue search and stream metadata provider. | None |
+| `:lastfm` | Last.fm & ListenBrainz | Real-time playback scrobbling and now-playing status updates. | User API Key & Secret (Optional) |
+| `:spine` | Spine Audio | Auxiliary audio stream resolution pipeline. | None |
 
 ---
 
-## 11. Repository Structure
+## 7. Technology Stack
+
+The application dependencies and version constraints are defined in `gradle/libs.versions.toml` and verified against the build configuration:
+
+| Component | Library / Framework | Version | Purpose |
+|---|---|---|---|
+| **Language** | Kotlin | `2.3.10` | First-class modern language with strict coroutines and serialization. |
+| **Build Tool** | Android Gradle Plugin (AGP) | `9.2.1` | Modern Android build pipeline with KSP and R8 optimisations. |
+| **UI Framework** | Jetpack Compose | `1.10.2` | Fully declarative UI toolkit with adaptive layouts. |
+| **Design System** | Material 3 & Adaptive | `1.5.0-alpha18` | Dynamic Material You theming and foldable/tablet window size adaptivity. |
+| **Media Engine** | AndroidX Media3 | `1.7.1` | Core ExoPlayer audio pipeline, `MediaSessionService`, and HLS streaming. |
+| **Local Database** | AndroidX Room | `2.8.4` | SQLite object mapping with schema v39 and WAL concurrency. |
+| **Preferences** | AndroidX DataStore | `1.2.0` | Type-safe asynchronous key-value persistence. |
+| **Dependency Injection** | Dagger Hilt | `2.59.1` | Compile-time dependency injection across services and ViewModels. |
+| **Network Client** | Ktor Client & OkHttp | `3.4.0` | High-throughput asynchronous HTTP client engine. |
+| **Image Loading** | Coil Compose | `3.3.0` | Asynchronous image decoding for covers, avatars, and GIF/SVG assets. |
+| **Background Tasks** | AndroidX WorkManager | `2.10.0` | Guaranteed background execution for playlist enrichment and caching. |
+| **HTML Parsing** | Jsoup | `1.22.1` | Robust HTML parsing for web-scraped metadata fallback pipelines. |
+| **JavaScript Engine** | QuickJS Android | `1.0.5` | Lightweight client-side ECMAScript runtime for cipher deobfuscation. |
+| **Stream Extraction** | NewPipeExtractor | `v0.25.2` | Community-maintained extraction engine for public media endpoints. |
+| **Logging** | JakeWharton Timber | `5.0.1` | Structured debug logging with zero release-build overhead. |
+
+---
+
+## 8. Repository Structure
+
+The ABYSS repository is partitioned into modular Gradle projects, ensuring strict separation of concerns, fast incremental build times, and isolated network layers:
 
 ```
 Abyss/
-├── app/                         # Primary Android application module
+├── app/                                 # Primary Android application module
+│   ├── src/main/AndroidManifest.xml     # Application manifest, permissions, and services
 │   ├── src/main/kotlin/com/rift/music/
-│   │   ├── app/                 # Application class & Activity lifecycle
-│   │   ├── db/                  # Room Database, migrations (1-38), DAOs, entities
-│   │   ├── feature/             # UI features (home, player, search, library, settings)
-│   │   ├── playback/            # MusicService, PlayerConnection, MediaSession, ASI
-│   │   └── ui/                  # Compose theme, components, Liquid Glass shaders
-│   └── src/main/res/            # Android resources, vector drawables, layouts
-├── innertube/                   # Independent YouTube Music / InnerTube client engine
-├── canvas/                      # Abstract animated canvas decoding infrastructure
-├── applecanvas/                 # Apple Music canvas video resolution module
-├── vivimusiccanvas/             # Community canvas service bridge
-├── artistvideo/                 # Artist video canvas playback integration
-├── lrclib/                      # LRCLIB lyrics API consumer
-├── betterlyrics/                # BetterLyrics provider module
-├── kugou/                       # KuGou multi-language lyrics parser
-├── paxsenixlyrics/              # Paxsenix lyrics engine client
-├── simpmusic/                   # Auxiliary lyrics and music metadata parser
-├── spotify/                     # Public Spotify playlist importer (no authentication)
-├── lastfm/                      # Last.fm and ListenBrainz REST scrobbling client
-├── jiosaavn/                    # Secondary regional audio resolution provider
-├── spine/                       # Fallback audio streaming client
-├── docs/                        # Complete technical documentation index
-└── gradle/                      # Gradle wrapper configuration and dependency catalogs
+│   │   ├── app/                         # App lifecycle, MainActivity, and crash reporting
+│   │   ├── constants/                   # PreferenceKeys, dimension tokens, and defaults
+│   │   ├── db/                          # Room Database (MusicDatabase v39), entities, DAOs
+│   │   ├── di/                          # Dagger Hilt dependency injection modules
+│   │   ├── eq/                          # CustomEqualizerAudioProcessor & EqualizerService
+│   │   ├── feature/                     # Feature UI screens (Home, Player, Search, Library, Settings)
+│   │   ├── playback/                    # MusicService, PlayerConnection, and ExoDownloadService
+│   │   ├── widget/                      # Android home-screen widget receivers and layouts
+│   │   └── utils/                       # Audio utilities, cipher helpers, and format parsers
+│   └── src/test/kotlin/                 # Extensive unit and migration test suites
+├── innertube/                           # Unofficial YouTube Music API client and format parsers
+├── spotify/                             # Spotify public playlist importer and track metadata client
+├── lrclib/                              # LRCLIB open-source synchronised lyrics provider
+├── kugou/                               # KuGou lyrics and bilingual translation client
+├── betterlyrics/                        # BetterLyrics syllable-timed lyrics integration
+├── musixmatchlyrics/                    # Musixmatch tokenised lyrics provider
+├── paxsenixlyrics/                      # Paxsenix lyric endpoint integration
+├── youlyplus/                           # YouLyPlus lyric provider integration
+├── canvas/                              # Base canvas artwork and motion video abstractions
+├── applecanvas/                         # Apple Music canvas video provider
+├── vivimusiccanvas/                     # Vivi Music canvas video integration
+├── artistvideo/                         # Artist background video stream provider
+├── jiosaavn/                            # JioSaavn stream and search provider
+├── lastfm/                              # Last.fm and ListenBrainz scrobbling integration
+├── spine/                               # Auxiliary stream resolution pipeline
+├── gradle/                              # Version catalogs (libs.versions.toml) and wrapper
+├── docs/                                # Technical documentation, architecture guides, and screenshots
+│   ├── images/screenshots/              # Genuine captured application screenshots
+│   ├── ARCHITECTURE.md                  # Comprehensive architectural specification
+│   ├── PLAYBACK.md                      # Detailed playback and media session engine guide
+│   ├── PERSISTENT_PLAYLIST_INTELLIGENCE.md # Three-tier playlist and cache documentation
+│   ├── README_AUDIT.md                  # Technical verification and documentation audit
+│   └── BUILD_AND_TEST.md                # Compilation, signing, and test documentation
+├── version.properties                   # Single source of truth for semantic versioning
+├── build.gradle.kts                     # Root build configuration
+└── settings.gradle.kts                  # Gradle multi-module project registry
 ```
 
 ---
 
-## 12. Engineering Decisions
+## 9. Installation and Requirements
 
-### Architectural Invariants
-1. **Application ID vs Kotlin Namespace:**
-   The Android application ID is permanently retained as `applicationId = "com.napster.music"`. This guarantees that existing user app data, SQLite databases, downloaded offline tracks, and system permissions are retained without needing an app uninstall or manual data migration. The internal Kotlin namespace was cleanly migrated to `com.rift.music`.
-2. **Room Schema Parity:**
-   Room schema version 38 exports are maintained under `app/schemas/com.rift.music.db.InternalDatabase/` with backwards schema discovery retained under `app/schemas/com.beatwave.music.db.InternalDatabase/`. In-memory SQLite migration tests confirm zero schema drift.
-3. **Multi-Module Lyrics & Canvas Isolation:**
-   Each external provider is isolated in its own Gradle subproject. Breaking API changes in upstream third-party endpoints never block core playback compilation.
-4. **Decoupled Playback via `PlayerConnection`:**
-   UI components never hold direct references to `ExoPlayer` or `MusicService`. Communication is handled through an IPC bridge powered by AndroidX Media3's `MediaBrowser` and Kotlin StateFlows, preventing memory leaks during Activity recreation.
+### System Requirements
+- **Minimum Android Version:** Android 8.0 Oreo (API level 26)
+- **Target Android Version:** Android 15 (API level 36)
+- **Recommended Android Version:** Android 13+ (API level 33+) for native media controls and dynamic theming
+- **Supported Architectures:** `arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`, and Universal
+
+### Build Flavours & Packages
+
+ABYSS provides two distinct release variant distributions:
+
+1. **FOSS Variant (`foss` - Default & Recommended):**
+   - 100% Free and Open-Source Software compliant with F-Droid inclusion standards.
+   - Zero proprietary Google Play Services binary blobs.
+   - Google Cast disabled (`CAST_AVAILABLE = false`).
+2. **GMS Variant (`gms`):**
+   - Includes Google Cast Framework (`com.google.android.gms:play-services-cast-framework`) for streaming audio to Chromecast and Google Nest devices.
 
 ---
 
-## 13. Documentation Index
+## 10. Building from Source
 
-For exhaustive technical references, inspect the comprehensive engineering documentation in the [`docs/`](docs/) directory:
+### Prerequisites
+- **JDK:** Java Development Kit 17 or 21 (Temurin or OpenJDK recommended)
+- **Android SDK:** Installed with Platform API 36/37 and Build-Tools 36.x
+- **Android NDK:** Version `27.0.12077973`
+
+### Step-by-Step Compilation
+
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/slythnox/Abyss.git
+   cd Abyss
+   ```
+
+2. **Assemble Debug Build (Universal FOSS):**
+   ```bash
+   ./gradlew assembleUniversalFossDebug
+   ```
+   The resulting APK is written to:
+   `app/build/outputs/apk/universalFoss/debug/Abyss-universal-foss-debug.apk`
+
+3. **Assemble Release Build (Universal FOSS):**
+   ```bash
+   ./gradlew assembleUniversalFossRelease
+   ```
+   The resulting APK is written to:
+   `app/build/outputs/apk/universalFoss/release/Abyss-universal-foss-release-unsigned.apk`
+
+4. **Assemble Architecture-Specific Release (e.g. ARM64):**
+   ```bash
+   ./gradlew assembleArm64FossRelease
+   ```
+
+5. **Execute Unit Tests:**
+   ```bash
+   ./gradlew testUniversalFossDebugUnitTest
+   ```
+
+6. **Automated Semantic Version Bumping:**
+   ```bash
+   ./gradlew bumpVersion -Ppart=patch   # Increments patch (e.g. 1.0.6 -> 1.0.7)
+   ./gradlew bumpVersion -Ppart=minor   # Increments minor (e.g. 1.0.7 -> 1.1.0)
+   ./gradlew bumpVersion -Ppart=major   # Increments major (e.g. 1.1.0 -> 2.0.0)
+   ```
+
+---
+
+## 11. Configuration
+
+ABYSS is fully functional immediately upon installation without mandatory configuration. Optional provider credentials may be configured locally if desired:
+
+### Optional Last.fm Scrobbling Credentials
+
+To enable native Last.fm or ListenBrainz scrobbling, define credentials in `local.properties` (or as environment variables before building):
+
+```properties
+# local.properties (Excluded from Git version control)
+LASTFM_API_KEY=your_lastfm_api_key_here
+LASTFM_SECRET=your_lastfm_secret_here
+```
+
+If left unconfigured, the application builds cleanly with empty strings, and Last.fm scrobbling remains dormant.
+
+---
+
+## 12. Privacy and Data Handling
+
+ABYSS is engineered with privacy as a foundational principle:
+
+- **No Proprietary Backend Infrastructure:** There are no ABYSS-managed servers collecting account details, device identifiers, or listening metrics.
+- **Zero Telemetry or Analytics SDKs:** The application does not bundle Firebase Analytics, Google Crashlytics, Mixpanel, Sentry, or any third-party tracking libraries.
+- **Local SQLite Data Storage:** All user playlists, search history, liked tracks, and audio preferences are persisted exclusively in the local on-device SQLite database (`song.db`) and AndroidX DataStore files within private application sandboxes.
+- **Direct Client-to-Endpoint Network Traffic:** When streaming audio or searching, network requests originate directly from the user's device to the respective provider endpoints (e.g. YouTube Music, Spotify public API, LRCLIB). These requests contain standard HTTP headers necessary to retrieve requested audio or metadata, and no supplementary behavioural telemetry is appended.
+- **Full Data Exportability:** Users may export their entire Room database and preferences at any time to inspect, backup, or migrate their data.
+
+---
+
+## 13. Security and Permissions
+
+ABYSS requests only permissions strictly necessary to perform audio playback, background service lifecycle management, and device integration:
+
+| Permission | Android Scope | Technical Rationale |
+|---|---|---|
+| `android.permission.INTERNET` | All APIs | Fetching audio streams, metadata, lyrics, and canvas artwork from public endpoints. |
+| `android.permission.ACCESS_NETWORK_STATE` | All APIs | Monitoring network transitions (Wi-Fi to Mobile) to adjust audio quality preferences dynamically. |
+| `android.permission.FOREGROUND_SERVICE` | API 28+ | Maintaining uninterrupted playback while the application is backgrounded. |
+| `android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK` | API 34+ | Android 14 requirement declaring that the foreground service executes media playback. |
+| `android.permission.FOREGROUND_SERVICE_DATA_SYNC` | API 34+ | Required for `ExoDownloadService` and background `SpotifyImportService` synchronisation. |
+| `android.permission.WAKE_LOCK` | All APIs | Preventing CPU deep sleep while audio decoding is in progress. |
+| `android.permission.POST_NOTIFICATIONS` | API 33+ | Displaying playback controls and artwork in the Android system notification drawer. |
+| `android.permission.RECEIVE_BOOT_COMPLETED` | All APIs | Restoring registered alarms or scheduled background work after device reboot. |
+| `android.permission.READ_MEDIA_AUDIO` | API 33+ | Indexing and playing local music files stored on the user's device. |
+| `android.permission.READ_EXTERNAL_STORAGE` | API 26–32 | Legacy storage permission for local audio playback on Android 12 and below. |
+| `android.permission.WRITE_EXTERNAL_STORAGE` | API 26–28 | Legacy permission strictly for saving custom ringtones to public storage on Android 8.0–9.0. |
+| `android.permission.BLUETOOTH_CONNECT` | API 31+ | Discovering paired Bluetooth audio devices, A2DP telemetry, and routing status. |
+
+---
+
+## 14. Testing and Quality Assurance
+
+The codebase includes an extensive suite of local JVM unit tests and Room migration verifications:
+
+- **Database Migration Testing:** `DatabaseMigration37To38Test.kt` verifies schema alterations and column additions between successive database versions, guaranteeing zero data loss during migrations.
+- **Import & Pagination Robustness:** `SpotifyLargePlaylistImportTest.kt` and `SpotifyImportPaginationTest.kt` validate pagination handling, cancellation recovery, and foreign-key integrity across collections exceeding 4,000 tracks.
+- **Playlist Intelligence & Cache Expiry:** `PersistentPlaylistIntelligenceTest.kt` and `LegacyLibraryBackfillCoordinatorTest.kt` ensure that expired stream cache records are purged and that provider mappings resolve deterministically.
+- **Playback & Queue Reliability:** `StreamingReliabilityTest.kt`, `AndroidAutoPlaybackQueueTest.kt`, and `RandomDiscoveryQueueTest.kt` verify state continuity across queue mutations and network stalls.
+- **Acoustic & Audio Engine Testing:** `BeatTrackerTest.kt`, `EnergyProfileTest.kt`, `KeyDetectorTest.kt`, and `TransitionSelectorTest.kt` validate signal analysis algorithms powering Auto-DJ transitions.
+
+Run the test suite locally with:
+```bash
+./gradlew testUniversalFossDebugUnitTest
+```
+
+---
+
+## 15. Contributing
+
+Contributions to ABYSS are welcome from software engineers, designers, and translators who value listener freedom and high-quality open-source code.
+
+### Guidelines for Contribution
+1. **Fork & Branch:** Create a feature branch with a descriptive name (`git checkout -b feature/audio-dsp-enhancement`).
+2. **Adhere to Code Standards:** Follow official Kotlin coding conventions and modern Jetpack Compose best practices. Maintain unidirectional data flow in MVI ViewModels.
+3. **Preserve Identity Constraints:** Never alter the Android Application ID (`com.napster.music`) or internal Kotlin namespace (`com.rift.music`).
+4. **Respect Architecture:** Keep UI screens decoupled from playback internals. Route player commands strictly through `PlayerConnection` and media controllers.
+5. **Verify Tests:** Ensure all unit tests pass before opening a Pull Request (`./gradlew testUniversalFossDebugUnitTest`).
+6. **Submit PR:** Submit a concise pull request explaining the problem addressed, technical changes introduced, and verification steps performed.
+
+---
+
+## 16. Licence and Provenance
+
+ABYSS is free software released under the terms of the **GNU General Public Licence v3.0** (GPL-3.0).
+
+```
+ABYSS — Native Android Music Player
+Copyright (C) 2026 ABYSS Contributors
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public Licence as published by
+the Free Software Foundation, either version 3 of the Licence, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public Licence for more details.
+
+You should have received a copy of the GNU General Public Licence
+along with this program. If not, see <https://www.gnu.org/licenses/>.
+```
+
+### Upstream Acknowledgements & Historical Lineage
+
+ABYSS is built upon and draws inspiration from pioneering open-source Android audio projects:
+- **ViMusic & InnerTune:** Architectural foundations for client-side InnerTube integration and Compose media playback.
+- **NewPipe / NewPipeExtractor:** Foundational research and extraction mechanisms for public media endpoints.
+- **SimpMusic & RiMusic:** Community insights into media session coordination, lyrics caching, and UI workflows.
+
+All third-party libraries and dependencies are governed by their respective open-source licences as acknowledged in their module directories.
+
+---
+
+## 17. Documentation Index
+
+Comprehensive technical documentation is maintained under the `docs/` directory:
 
 | Document | Description |
 |---|---|
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Detailed architectural patterns, Clean Architecture, and module graph |
-| [`docs/SETUP.md`](docs/SETUP.md) | Complete workstation environment, IDE, and SDK configuration instructions |
-| [`docs/BUILD_AND_TEST.md`](docs/BUILD_AND_TEST.md) | Gradle compilation, test suites, ProGuard/R8 rules, and release signing |
-| [`docs/FEATURES.md`](docs/FEATURES.md) | Comprehensive inventory of active features, UI components, and limitations |
-| [`docs/PLAYBACK.md`](docs/PLAYBACK.md) | Audio pipeline lifecycle, MediaSession callbacks, and caching logic |
-| [`docs/ASI.md`](docs/ASI.md) | Project ASI 1.0 architecture, session profiling, beam search, and evaluation |
-| [`docs/SEARCH_AND_SPOTIFY_IMPORT.md`](docs/SEARCH_AND_SPOTIFY_IMPORT.md) | Debouncing, InnerTube search filters, and public Spotify scraping logic |
-| [`docs/DATABASE_AND_PREFERENCES.md`](docs/DATABASE_AND_PREFERENCES.md) | Room SQLite schema definitions, 38 migrations, and DataStore structures |
-| [`docs/INTEGRATIONS.md`](docs/INTEGRATIONS.md) | Third-party service configuration, API keys, and graceful degradation |
-| [`docs/PRIVACY_AND_PERMISSIONS.md`](docs/PRIVACY_AND_PERMISSIONS.md) | Comprehensive audit of device permissions, network calls, and data flows |
-| [`docs/APK_UPDATE_AND_SIGNING.md`](docs/APK_UPDATE_AND_SIGNING.md) | Release signing lifecycle, keystore security, certificate fingerprint verification, and safe in-place APK upgrades |
-| [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Code styling guidelines, pull request protocols, and review standards |
-| [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) | Common compilation issues, audio focus bugs, and runtime diagnostics |
-| [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) | Quality assurance, automated test verification, and APK signing steps |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Comprehensive system architecture, MVI patterns, and module boundaries. |
+| [docs/PLAYBACK.md](docs/PLAYBACK.md) | Detailed media session coordination, ExoPlayer integration, and diagnostics. |
+| [docs/PERSISTENT_PLAYLIST_INTELLIGENCE.md](docs/PERSISTENT_PLAYLIST_INTELLIGENCE.md) | The three-tier model, background enrichment, and stream cache mechanics. |
+| [docs/SEARCH_AND_SPOTIFY_IMPORT.md](docs/SEARCH_AND_SPOTIFY_IMPORT.md) | Spotify import mechanics, search debouncing, and candidate resolution. |
+| [docs/DATABASE_AND_PREFERENCES.md](docs/DATABASE_AND_PREFERENCES.md) | Room SQLite schema v39 reference, entities, DAOs, and DataStore preference keys. |
+| [docs/BUILD_AND_TEST.md](docs/BUILD_AND_TEST.md) | Detailed compilation instructions, product flavours, and signing guidance. |
+| [docs/PRIVACY_AND_PERMISSIONS.md](docs/PRIVACY_AND_PERMISSIONS.md) | Exhaustive privacy disclosures, permissions justification, and network boundaries. |
+| [docs/FEATURES.md](docs/FEATURES.md) | Detailed functional catalogue of implemented user-facing capabilities. |
+| [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) | External provider contracts, lyrics engines, and canvas backdrops. |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Solutions for common audio decoding, background playback, and import issues. |
+| [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md) | Pre-release verification procedure, version bumping, and signing verification. |
+| [docs/README_AUDIT.md](docs/README_AUDIT.md) | Verification audit certifying all technical facts and captured screenshots. |
 
 ---
 
-## 14. Licensing and Provenance
+## 18. Project Roadmap
 
-### Software Licence
-Abyss is licensed under the **GNU General Public Licence v3.0 (GPL-3.0)**. Permissions of this strong copyleft licence are conditioned on making available complete source code of licensed works and modifications under the same licence. See the [`LICENSE`](LICENSE) file for the full legal text.
+The development trajectory for ABYSS remains restrained and focused on reliability, performance, and listener control:
 
-### Upstream Open-Source Lineage
-This application represents an evolution of open-source music playback on Android, built upon foundational reverse-engineering and local-first media playback architecture under GPL-3.0.
-- **InnerTune** *(by Malopieds)*: Original InnerTube API reverse-engineering implementation and Room schema foundation.
-
-### AI-Assisted Development Disclosure
-Portions of the codebase refactoring, architectural auditing, test suite authoring, and documentation generation were performed with the assistance of advanced artificial intelligence models (Google Gemini and Anthropic Claude). All machine-assisted outputs were rigorously inspected, validated, compiled, and verified by human maintainers. In adherence to open-source software governance, AI systems are not granted authorship status; all copyright and legal responsibilities remain with the human contributors and respective upstream licence holders.
+- **Current Status (v1.0.7):** Stable release featuring Three-Tier Persistent Playlist Intelligence, 4,000+ track import resilience, multi-provider synchronised lyrics, custom 3-band radial equaliser, and Android Auto integration.
+- **Active Maintenance:**
+  - Continuous hardening of InnerTube client extractors against upstream endpoint adjustments.
+  - Refinement of background `WorkManager` batching for large playlist metadata enrichment.
+  - Performance profiling of Compose recomposition counts across large library grids.
+- **Future Explorations:**
+  - Expanded lossless audio container support and enhanced DSP spatialisation filters.
+  - Additional community lyrics provider integrations.
+  - Further optimisations for foldable and dual-screen form factors.
 
 ---
 
-<div align="center">
-  <sub>Engineered for uncompromising listening freedom. Free software for everyone.</sub>
-</div>
+## 19. Acknowledgements
+
+We express sincere gratitude to the open-source developers, contributors, and reverse-engineers who make independent media software viable on Android:
+
+- The Android Open Source Project (AOSP) and AndroidX team.
+- The Jetpack Compose and Media3 engineering teams at Google.
+- The NewPipe and TeamNewPipe community for unyielding dedication to open protocols.
+- The maintainers of LRCLIB, KuGou, BetterLyrics, and Musixmatch for open lyric indexing.
+- Every individual contributor who has tested builds, submitted patches, translated strings, and advocated for listener freedom.
+
+---
+
+## 20. AI-Assisted Development Disclosure
+
+In the spirit of complete engineering transparency, the maintainers disclose that generative artificial intelligence tools (including large language models and automated code assistance systems) may have been utilised during parts of the development lifecycle of ABYSS. These tools may have assisted in tasks such as codebase exploration, interface prototyping, debugging, documentation drafting, test generation, and architectural analysis.
+
+The utilisation of AI assistance in no way diminishes human engineering responsibility. Every architectural decision, code change, database schema migration, and documentation entry is reviewed, validated, and verified by human maintainers. Contributions, whether authored by humans or developed with AI assistance, are evaluated strictly on their technical merits, correctness, maintainability, and alignment with the project's core philosophy of listening freedom.
